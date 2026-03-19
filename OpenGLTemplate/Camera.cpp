@@ -2,6 +2,7 @@
 #include "gamewindow.h"
 #include "CameraMode.h"
 #include "FreeCam.h"
+#include "PathBuilderCam.h"
 
 // Constructor for camera -- initialise with some default values
 CCamera::CCamera()
@@ -11,6 +12,7 @@ CCamera::CCamera()
 	m_CamData.upVector = glm::vec3(0.0f, 1.0f, 0.0f);
 	m_CameraModes.reserve(5);
 	m_CameraModes.push_back(std::make_unique<FreeCam>());
+	m_CameraModes.push_back(std::make_unique<PathBuilderCam>());
 	m_CameraModeIndex = 0;
 	m_speed = 0.025f;
 }
@@ -75,6 +77,16 @@ void CCamera::TranslateByKeyboard(double dt)
 	if (GetKeyState(VK_RIGHT) & 0x80 || GetKeyState('D') & 0x80) {
 		Strafe(1.0*dt);
 	}
+
+	if (GetKeyState('2') & 0x80)
+	{
+		IncrementCameraIndexSafe();
+	}
+
+	if (GetKeyState('1') & 0x80)
+	{
+		DecrementCameraIndexSafe();
+	}
 }
 // Return the camera position
 glm::vec3 CCamera::GetPosition() const
@@ -135,5 +147,15 @@ glm::mat4 CCamera::GetViewMatrix()
 glm::mat3 CCamera::ComputeNormalMatrix(const glm::mat4 &modelViewMatrix)
 {
 	return glm::transpose(glm::inverse(glm::mat3(modelViewMatrix)));
+}
+
+void CCamera::IncrementCameraIndexSafe()
+{
+	m_CameraModeIndex = (m_CameraModeIndex + 1) % m_CameraModes.size();
+}
+
+void CCamera::DecrementCameraIndexSafe()
+{
+	m_CameraModeIndex = (m_CameraModeIndex - 1) % m_CameraModes.size();
 }
 

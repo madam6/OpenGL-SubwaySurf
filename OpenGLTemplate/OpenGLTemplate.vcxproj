@@ -138,6 +138,7 @@
     <ClInclude Include="HighResolutionTimer.h" />
     <ClInclude Include="MatrixStack.h" />
     <ClInclude Include="OpenAssetImportMesh.h" />
+    <ClInclude Include="PathBuilderCam.h" />
     <ClInclude Include="Plane.h" />
     <ClInclude Include="Shaders.h" />
     <ClInclude Include="Skybox.h" />
@@ -160,6 +161,7 @@
     <ClCompile Include="HighResolutionTimer.cpp" />
     <ClCompile Include="MatrixStack.cpp" />
     <ClCompile Include="OpenAssetImportMesh.cpp" />
+    <ClCompile Include="PathBuilderCam.cpp" />
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="Shaders.cpp" />
     <ClCompile Include="Skybox.cpp" />

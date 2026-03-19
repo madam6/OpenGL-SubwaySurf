@@ -83,6 +83,9 @@
     <ClInclude Include="FreeCam.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PathBuilderCam.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Audio.cpp">
@@ -143,6 +146,9 @@
       <Filter>Source Files\GameSystems</Filter>
     </ClCompile>
     <ClCompile Include="FreeCam.cpp">
+      <Filter>Source Files\GameSystems</Filter>
+    </ClCompile>
+    <ClCompile Include="PathBuilderCam.cpp">
       <Filter>Source Files\GameSystems</Filter>
     </ClCompile>
   </ItemGroup>

@@ -46,6 +46,9 @@ public:
 	glm::mat3 ComputeNormalMatrix(const glm::mat4 &modelViewMatrix);
 
 private:
+	void IncrementCameraIndexSafe();
+	void DecrementCameraIndexSafe();
+
 	camData m_CamData;
 	vector<std::unique_ptr<CameraMode>> m_CameraModes;
 	size_t m_CameraModeIndex;
