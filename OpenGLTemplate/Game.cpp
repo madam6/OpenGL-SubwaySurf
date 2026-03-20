@@ -496,10 +496,10 @@ LRESULT Game::ProcessEvents(HWND window,UINT message, WPARAM w_param, LPARAM l_p
 			PostQuitMessage(0);
 			break;
 		case '1':
-			m_pAudio->PlayEventSound();
+			//m_pAudio->PlayEventSound();
 			break;
 		case VK_F1:
-			m_pAudio->PlayEventSound();
+			//m_pAudio->PlayEventSound();
 			break;
 		}
 		break;

@@ -14,6 +14,7 @@ CCamera::CCamera()
 	m_CameraModes.push_back(std::make_unique<FreeCam>());
 	m_CameraModes.push_back(std::make_unique<PathBuilderCam>());
 	m_CameraModeIndex = 0;
+	m_CurrentMode = mode::normal;
 	m_speed = 0.025f;
 }
 CCamera::~CCamera()
@@ -35,6 +36,15 @@ void CCamera::Strafe(double direction)
 
 	m_CamData.viewpoint.x = m_CamData.viewpoint.x + m_strafeVector.x * speed;
 	m_CamData.viewpoint.z = m_CamData.viewpoint.z + m_strafeVector.z * speed;
+}
+
+void CCamera::RotateAroundSelf(float degrees)
+{
+	glm::vec3 forward = glm::normalize(m_CamData.viewpoint - m_CamData.position);
+
+	glm::mat4 R = glm::rotate(glm::mat4(1.0f), glm::radians(degrees), forward);
+
+	m_CamData.upVector = glm::normalize(glm::vec3(R * glm::vec4(m_CamData.upVector, 0.0f)));
 }
 
 // Advance the camera (forward / backward motion)
@@ -71,22 +81,49 @@ void CCamera::TranslateByKeyboard(double dt)
 	}
 
 	if (GetKeyState(VK_LEFT) & 0x80 || GetKeyState('A') & 0x80) {
-		Strafe(-1.0*dt);
+		switch (m_CurrentMode)
+		{
+		case mode::normal:
+			Strafe(-1.0 * dt);
+			break;
+		case mode::pathBuilding:
+			RotateAroundSelf(-0.05 * dt);
+			break;
+		default:
+			break;
+		}
+		
 	}
 
 	if (GetKeyState(VK_RIGHT) & 0x80 || GetKeyState('D') & 0x80) {
-		Strafe(1.0*dt);
+		switch (m_CurrentMode)
+		{
+		case mode::normal:
+			Strafe(1.0 * dt);
+			break;
+		case mode::pathBuilding:
+			RotateAroundSelf(0.05 * dt);
+			break;
+		default:
+			break;
+		}
 	}
 
-	if (GetKeyState('2') & 0x80)
+	static bool tabWasPressed = false;
+	bool tabIsPressed = (GetKeyState(VK_TAB) & 0x80) != 0;
+
+	if (tabIsPressed && !tabWasPressed)
 	{
 		IncrementCameraIndexSafe();
-	}
 
-	if (GetKeyState('1') & 0x80)
-	{
-		DecrementCameraIndexSafe();
+		if (m_CurrentMode == mode::pathBuilding) {
+			OutputDebugString("Switched to PathBuilder Mode!\n");
+		}
+		else {
+			OutputDebugString("Switched to FreeCam Mode!\n");
+		}
 	}
+	tabWasPressed = tabIsPressed;
 }
 // Return the camera position
 glm::vec3 CCamera::GetPosition() const
@@ -152,6 +189,14 @@ glm::mat3 CCamera::ComputeNormalMatrix(const glm::mat4 &modelViewMatrix)
 void CCamera::IncrementCameraIndexSafe()
 {
 	m_CameraModeIndex = (m_CameraModeIndex + 1) % m_CameraModes.size();
+	if (m_CameraModeIndex == 1)
+	{
+		m_CurrentMode = mode::pathBuilding;
+	}
+	else
+	{
+		m_CurrentMode = mode::normal;
+	}
 }
 
 void CCamera::DecrementCameraIndexSafe()

@@ -10,6 +10,13 @@ struct camData
 	glm::vec3 viewpoint;// The camera's viewpoint (point where the camera is looking);
 	glm::vec3 upVector;// The camera's up vector
 };
+
+enum mode
+{
+	normal,
+	pathBuilding
+};
+
 class CameraMode;
 class CCamera {
 public:
@@ -33,6 +40,8 @@ public:
 	// Strafe the camera (move it side to side)
 	void Strafe(double direction);
 
+	void RotateAroundSelf(float degrees);
+
 	// Advance the camera (move it forward or backward)
 	void Advance(double direction);
 
@@ -55,6 +64,8 @@ private:
 	glm::vec3 m_strafeVector;		// The camera's strafe vector
 
 	float m_speed;					// How fast the camera moves
+
+	mode m_CurrentMode;
 
 	glm::mat4 m_perspectiveProjectionMatrix;		// Perspective projection matrix
 	glm::mat4 m_orthographicProjectionMatrix;		// Orthographic projection matrix

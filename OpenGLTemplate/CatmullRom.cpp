@@ -1,7 +1,7 @@
 #include "CatmullRom.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
-
+#include <fstream>
 
 
 CCatmullRom::CCatmullRom()
@@ -45,7 +45,7 @@ void CCatmullRom::CreateListGPUData(GLuint& vaoId, vector<glm::vec3>& points)
 	for (int i = 0; i < points.size(); i++)
 	{
 		float u = (i % 2 == 0) ? 0.0f : 1.0f;
-		float v = (float)(i / 2) / 8.0f;
+		float v = (float)(i / 2) / 80.0f;
 
 		glm::vec2 texCoord(u, v);
 
@@ -74,14 +74,15 @@ void CCatmullRom::SetControlPoints()
 	// Set control points (m_controlPoints) here, or load from disk
 
 	// Optionally, set upvectors (m_controlUpVectors, one for each control point as well)
-	m_controlPoints.push_back(glm::vec3(100, 5, 0));
+/*	m_controlPoints.push_back(glm::vec3(100, 5, 0));
 	m_controlPoints.push_back(glm::vec3(71, 5, 71));
 	m_controlPoints.push_back(glm::vec3(0, 5, 100));
 	m_controlPoints.push_back(glm::vec3(-71, 5, 71));
 	m_controlPoints.push_back(glm::vec3(-100, 5, 0));
 	m_controlPoints.push_back(glm::vec3(-71, 5, -71));
 	m_controlPoints.push_back(glm::vec3(0, 5, -100));
-	m_controlPoints.push_back(glm::vec3(71, 5, -71));
+	m_controlPoints.push_back(glm::vec3(71, 5, -71));*/
+	ReadTrackCsv();
 }
 
 
@@ -192,12 +193,55 @@ void CCatmullRom::UniformlySampleControlPoints(int numSamples)
 
 }
 
+void CCatmullRom::ReadTrackCsv()
+{
+	ifstream f("path/track1.csv");
+	string line;
+
+	while (getline(f, line))
+	{
+		stringstream ss(line);
+		string val;
+
+		glm::vec3 splinePoint;
+		glm::vec3 splinePointUpVector;
+
+		float x, y, z;
+
+		getline(ss, val, ',');
+		x = static_cast<float>(stof(val));
+
+		getline(ss, val, ',');
+		y = static_cast<float>(stof(val));
+
+		getline(ss, val, ',');
+		z = static_cast<float>(stof(val));
+
+		splinePoint = glm::vec3(x, y, z);
+
+
+		getline(ss, val, ',');
+		x = static_cast<float>(stof(val));
+
+		getline(ss, val, ',');
+		y = static_cast<float>(stof(val));
+
+		getline(ss, val, ',');
+		z = static_cast<float>(stof(val));
+
+		splinePointUpVector = glm::vec3(x, y, z);
+
+		m_controlPoints.push_back(splinePoint);
+		m_controlUpVectors.push_back(splinePointUpVector);
+	}
+}
+
 
 
 void CCatmullRom::CreateCentreline()
 {
 	SetControlPoints();
-	UniformlySampleControlPoints(500);
+	UniformlySampleControlPoints(5000);
 
 	CreateListGPUData(m_vaoCentreline, m_centrelinePoints);
 }
@@ -208,18 +252,23 @@ void CCatmullRom::CreateOffsetCurves()
 	for (int i = 0; i < m_centrelinePoints.size(); i++)
 	{
 		glm::vec3& p = m_centrelinePoints[i];
-
 		glm::vec3& pNext = m_centrelinePoints[(i + 1) % m_centrelinePoints.size()];
 
-		glm::vec3 tangentVectorT = glm::normalize(pNext - p);
-		glm::vec3 N = glm::normalize(glm::cross(tangentVectorT, (glm::vec3(0.f, 1.f, 0.f))));
-		glm::vec3 B = glm::normalize(glm::cross(N, tangentVectorT));
+		glm::vec3 T = glm::normalize(pNext - p);
 
-		glm::vec3 l = p - ((m_PathWidth / 2) * N);
-		glm::vec3 r = p + ((m_PathWidth / 2) * N);
+		glm::vec3 Up = (m_centrelineUpVectors.size() > i) ? m_centrelineUpVectors[i] : glm::vec3(0, 1, 0);
+
+		glm::vec3 N = glm::normalize(glm::cross(T, Up));
+
+		glm::vec3 B = glm::normalize(glm::cross(N, T));
+
+		glm::vec3 l = p - ((m_PathWidth / 2.0f) * N);
+		glm::vec3 r = p + ((m_PathWidth / 2.0f) * N);
 
 		m_leftOffsetPoints.push_back(l);
 		m_rightOffsetPoints.push_back(r);
+
+		m_centrelineUpVectors[i] = B;
 	}
 
 	CreateListGPUData(m_vaoLeftOffsetCurve, m_leftOffsetPoints);

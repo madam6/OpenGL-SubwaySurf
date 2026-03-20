@@ -43,6 +43,7 @@ bool CAudio::LoadEventSound(const char *filename)
 bool CAudio::PlayEventSound()
 {
 	result = m_FmodSystem->playSound(m_eventSound, NULL, false, NULL);
+
 	FmodErrorCheck(result);
 	if (result != FMOD_OK)
 		return false;
@@ -68,6 +69,7 @@ bool CAudio::LoadMusicStream(const char *filename)
 bool CAudio::PlayMusicStream()
 {
 	result = m_FmodSystem->playSound(m_music, NULL, false, &m_musicChannel);
+	m_musicChannel->setVolume(0.3f);
 	FmodErrorCheck(result);
 
 	if (result != FMOD_OK)

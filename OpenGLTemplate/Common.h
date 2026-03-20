@@ -1,6 +1,6 @@
 #include <ctime>
 #include <windows.h>
-
+#include <iostream>
 #include <cstring>
 #include <vector>
 #include <sstream>
