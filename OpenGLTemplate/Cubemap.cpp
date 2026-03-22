@@ -7,7 +7,7 @@
 #pragma comment(lib, "lib/FreeImage.lib")
 
 
-bool CCubemap::LoadTexture(string filename, BYTE **bmpBytes, int &iWidth, int &iHeight)
+bool CCubemap::LoadTexture(std::string filename, BYTE **bmpBytes, int &iWidth, int &iHeight)
 {
 	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
 	FIBITMAP* dib(0);
@@ -67,7 +67,7 @@ void CCubemap::Bind(int iTextureUnit)
 
 
 // Create the plane, including its geometry, texture mapping, normal, and colour
-void CCubemap::Create(string sPositiveX, string sNegativeX, string sPositiveY, string sNegativeY, string sPositiveZ, string sNegativeZ)
+void CCubemap::Create(std::string sPositiveX, std::string sNegativeX, std::string sPositiveY, std::string sNegativeY, std::string sPositiveZ, std::string sNegativeZ)
 {
 	int iWidth, iHeight;
 

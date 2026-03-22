@@ -128,9 +128,14 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraMode.h" />
     <ClInclude Include="CatmullRom.h" />
+    <ClInclude Include="CatmulRomComponent.h" />
     <ClInclude Include="Common.h" />
+    <ClInclude Include="Component.h" />
+    <ClInclude Include="ComponentRegistry.h" />
     <ClInclude Include="Crystal.h" />
     <ClInclude Include="Cubemap.h" />
+    <ClInclude Include="Entity.h" />
+    <ClInclude Include="EntityParser.h" />
     <ClInclude Include="FreeCam.h" />
     <ClInclude Include="FreeTypeFont.h" />
     <ClInclude Include="Game.h" />
@@ -140,6 +145,7 @@
     <ClInclude Include="OpenAssetImportMesh.h" />
     <ClInclude Include="PathBuilderCam.h" />
     <ClInclude Include="Plane.h" />
+    <ClInclude Include="Renderer.h" />
     <ClInclude Include="Shaders.h" />
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="Sphere.h" />
@@ -152,8 +158,12 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CameraMode.cpp" />
     <ClCompile Include="CatmullRom.cpp" />
+    <ClCompile Include="CatmulRomComponent.cpp" />
+    <ClCompile Include="Component.cpp" />
     <ClCompile Include="Crystal.cpp" />
     <ClCompile Include="Cubemap.cpp" />
+    <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="EntityParser.cpp" />
     <ClCompile Include="FreeCam.cpp" />
     <ClCompile Include="FreeTypeFont.cpp" />
     <ClCompile Include="Game.cpp" />
@@ -163,6 +173,7 @@
     <ClCompile Include="OpenAssetImportMesh.cpp" />
     <ClCompile Include="PathBuilderCam.cpp" />
     <ClCompile Include="Plane.cpp" />
+    <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Shaders.cpp" />
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="Sphere.cpp" />

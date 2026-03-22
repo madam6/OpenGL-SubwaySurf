@@ -9,14 +9,14 @@ class CSphere
 public:
 	CSphere();
 	~CSphere();
-	void Create(string directory, string front, int slicesIn, int stacksIn);
+	void Create(std::string directory, std::string front, int slicesIn, int stacksIn);
 	void Render();
 	void Release();
 private:
 	UINT m_vao;
 	CVertexBufferObjectIndexed m_vbo;
 	CTexture m_texture;
-	string m_directory;
-	string m_filename;
+	std::string m_directory;
+	std::string m_filename;
 	int m_numTriangles;
 };

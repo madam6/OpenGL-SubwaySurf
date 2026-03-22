@@ -78,7 +78,7 @@ void CFreeTypeFont::CreateChar(int index)
 
 
 // Loads an entire font with the given path sFile and pixel size iPXSize
-bool CFreeTypeFont::LoadFont(string file, int ipixelSize)
+bool CFreeTypeFont::LoadFont(std::string file, int ipixelSize)
 {
 	BOOL bError = FT_Init_FreeType(&m_ftLib);
 	
@@ -113,10 +113,10 @@ bool CFreeTypeFont::LoadFont(string file, int ipixelSize)
 }
 
 // Loads a system font with given name (sName) and pixel size (iPXSize)
-bool CFreeTypeFont::LoadSystemFont(string name, int ipixelSize)
+bool CFreeTypeFont::LoadSystemFont(std::string name, int ipixelSize)
 {
 	char buf[512]; GetWindowsDirectory(buf, 512);
-	string sPath = buf;
+	std::string sPath = buf;
 	sPath += "\\Fonts\\";
 	sPath += name;
 
@@ -125,7 +125,7 @@ bool CFreeTypeFont::LoadSystemFont(string name, int ipixelSize)
 
 
 // Prints text at the specified location (x, y) with the given pixel size (iPXSize)
-void CFreeTypeFont::Print(string text, int x, int y, int pixelSize)
+void CFreeTypeFont::Print(std::string text, int x, int y, int pixelSize)
 {
 	if(!m_isLoaded)
 		return;
@@ -184,7 +184,7 @@ void CFreeTypeFont::ReleaseFont()
 }
 
 // Gets the width of text
-int CFreeTypeFont::GetTextWidth(string sText, int iPixelSize)
+int CFreeTypeFont::GetTextWidth(std::string sText, int iPixelSize)
 {
 	int iResult = 0;
 	for (int i = 0; i < (int)sText.size(); i++)

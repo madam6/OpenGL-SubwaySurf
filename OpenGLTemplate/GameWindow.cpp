@@ -145,7 +145,7 @@ void GameWindow::operator=(const GameWindow& newWindow)
 }
 
 // Create the game window
-void GameWindow::CreateGameWindow(string sTitle) 
+void GameWindow::CreateGameWindow(std::string sTitle) 
 {
 	WNDCLASSEX wcex;
 	memset(&wcex, 0, sizeof(WNDCLASSEX));

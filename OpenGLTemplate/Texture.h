@@ -5,7 +5,7 @@ class CTexture
 {
 public:
 	void CreateFromData(BYTE* data, int width, int height, int bpp, GLenum format, bool generateMipMaps = false);
-	bool Load(string path, bool generateMipMaps = true);
+	bool Load(std::string path, bool generateMipMaps = true);
 	void Bind(int textureUnit = 0);
 
 	void SetSamplerObjectParameter(GLenum parameter, GLenum value);
@@ -25,6 +25,6 @@ private:
 	UINT m_samplerObjectID; // Sampler id
 	bool m_mipMapsGenerated;
 
-	string m_path;
+	std::string m_path;
 };
 

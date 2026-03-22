@@ -11,7 +11,7 @@ CPlane::~CPlane()
 
 
 // Create the plane, including its geometry, texture mapping, normal, and colour
-void CPlane::Create(string directory, string filename, float width, float height, float textureRepeat)
+void CPlane::Create(std::string directory, std::string filename, float width, float height, float textureRepeat)
 {
 	
 	m_width = width;

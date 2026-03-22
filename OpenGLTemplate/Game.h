@@ -18,6 +18,51 @@ class COpenAssetImportMesh;
 class CAudio;
 class CCrystal;
 class CCatmullRom;
+class Entity;
+class Renderer;
+struct RenderData
+{
+	glm::mat4 modelMatrix;
+	glm::mat3 normalMatrix;
+
+	COpenAssetImportMesh* mesh = nullptr;
+
+	glm::vec3 Ma{ 1.0f };
+	glm::vec3 Md{ 1.0f };
+	glm::vec3 Ms{ 0.0f };
+	float shininess = 1.0f;
+
+	GLuint diffuseTexture = 0;
+	GLuint cubeMapTexture = 0;
+	bool useTexture = false;
+	bool useCubeMap = false;
+
+	CShaderProgram* shader = nullptr;
+
+	bool renderSkybox = false;
+};
+
+struct FrameData
+{
+	glm::mat4 viewMatrix;
+	glm::mat4 projMatrix;
+	glm::vec3 cameraPosition;
+
+	struct Light
+	{
+		glm::vec4 position;
+		glm::vec3 La, Ld, Ls;
+	};
+
+	std::vector<Light> lights;
+};
+
+enum Shaders
+{
+	MainShader = 0,
+	FontShader = 1,
+	CrystalShader = 2
+};
 
 class Game {
 private:
@@ -26,10 +71,14 @@ private:
 	void Update();
 	void Render();
 
+	void InitShaders();
+
+	std::vector<std::string> ReadEntityLines(const std::string& filename);
+
 	// Pointers to game objects.  They will get allocated in Game::Initialise()
 	CSkybox *m_pSkybox;
 	CCamera *m_pCamera;
-	vector <CShaderProgram *> *m_pShaderPrograms;
+	std::vector <CShaderProgram *> *m_pShaderPrograms;
 	CPlane *m_pPlanarTerrain;
 	CFreeTypeFont *m_pFtFont;
 	COpenAssetImportMesh *m_pBarrelMesh;
@@ -38,9 +87,9 @@ private:
 	CHighResolutionTimer *m_pHighResolutionTimer;
 	CAudio *m_pAudio;
 
-	unique_ptr<CCatmullRom> m_CatmulRom;
-	unique_ptr<CCrystal> m_pCrystal;
-
+	std::unique_ptr<CCatmullRom> m_CatmulRom;
+	std::unique_ptr<CCrystal> m_pCrystal;
+	std::unique_ptr<Renderer> m_Renderer;
 
 	float m_currentDistance;
 	float m_cameraSpeed;
@@ -50,6 +99,7 @@ private:
 	int m_framesPerSecond;
 	bool m_appActive;
 
+	std::vector<std::unique_ptr<Entity>> m_entities;
 
 public:
 	Game();

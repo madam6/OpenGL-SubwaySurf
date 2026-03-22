@@ -19,6 +19,6 @@ public:
 	
 private:
 	UINT m_vbo;									// VBO id
-	vector<BYTE> m_data;							// Data to be put in the VBO
+	std::vector<BYTE> m_data;							// Data to be put in the VBO
 	bool m_dataUploaded;							// A flag indicating if the data has been sent to the GPU
 };

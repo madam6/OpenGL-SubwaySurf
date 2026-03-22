@@ -11,9 +11,9 @@ CShader::~CShader()
 {}
 
 // Loads a shader, stored as a text file with filename sFile.  The shader is of type iType (vertex, fragment, geometry, etc.)
-bool CShader::LoadShader(string sFile, int iType)
+bool CShader::LoadShader(std::string sFile, int iType)
 {
-	vector<string> sLines;
+	std::vector<std::string> sLines;
 
 	if(!GetLinesFromFile(sFile, false, &sLines)) {
 		char message[1024];
@@ -68,14 +68,14 @@ bool CShader::LoadShader(string sFile, int iType)
 }
 
 
-// Loads a file into a vector of strings (vResult)
-bool CShader::GetLinesFromFile(string sFile, bool bIncludePart, vector<string>* vResult)
+// Loads a file into a std::vector of strings (vResult)
+bool CShader::GetLinesFromFile(std::string sFile, bool bIncludePart, std::vector<std::string>* vResult)
 {
 	FILE* fp;
 	fopen_s(&fp, sFile.c_str(), "rt");
 	if(!fp)return false;
 
-	string sDirectory;
+	std::string sDirectory;
 	int slashIndex = -1;
 
 	for (int i = (int)sFile.size()-1; i == 0; i--)
@@ -97,12 +97,12 @@ bool CShader::GetLinesFromFile(string sFile, bool bIncludePart, vector<string>* 
 
 	while(fgets(sLine, 255, fp))
 	{
-		stringstream ss(sLine);
-		string sFirst;
+		std::stringstream ss(sLine);
+		std::string sFirst;
 		ss >> sFirst;
 		if(sFirst == "#include")
 		{
-			string sFileName;
+			std::string sFileName;
 			ss >> sFileName;
 			if((int)sFileName.size() > 0 && sFileName[0] == '\"' && sFileName[(int)sFileName.size()-1] == '\"')
 			{
@@ -214,13 +214,13 @@ UINT CShaderProgram::GetProgramID()
 
 // Setting floats
 
-void CShaderProgram::SetUniform(string sName, float* fValues, int iCount)
+void CShaderProgram::SetUniform(std::string sName, float* fValues, int iCount)
 {
 	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	glUniform1fv(iLoc, iCount, fValues);
 }
 
-void CShaderProgram::SetUniform(string sName, const float fValue)
+void CShaderProgram::SetUniform(std::string sName, const float fValue)
 {
 	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	glUniform1fv(iLoc, 1, &fValue);
@@ -228,37 +228,37 @@ void CShaderProgram::SetUniform(string sName, const float fValue)
 
 // Setting vectors
 
-void CShaderProgram::SetUniform(string sName, glm::vec2* vVectors, int iCount)
+void CShaderProgram::SetUniform(std::string sName, glm::vec2* vVectors, int iCount)
 {
 	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	glUniform2fv(iLoc, iCount, (GLfloat*)vVectors);
 }
 
-void CShaderProgram::SetUniform(string sName, const glm::vec2 vVector)
+void CShaderProgram::SetUniform(std::string sName, const glm::vec2 vVector)
 {
 	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	glUniform2fv(iLoc, 1, (GLfloat*)&vVector);
 }
 
-void CShaderProgram::SetUniform(string sName, glm::vec3* vVectors, int iCount)
+void CShaderProgram::SetUniform(std::string sName, glm::vec3* vVectors, int iCount)
 {
 	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	glUniform3fv(iLoc, iCount, (GLfloat*)vVectors);
 }
 
-void CShaderProgram::SetUniform(string sName, const glm::vec3 vVector)
+void CShaderProgram::SetUniform(std::string sName, const glm::vec3 vVector)
 {
 	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	glUniform3fv(iLoc, 1, (GLfloat*)&vVector);
 }
 
-void CShaderProgram::SetUniform(string sName, glm::vec4* vVectors, int iCount)
+void CShaderProgram::SetUniform(std::string sName, glm::vec4* vVectors, int iCount)
 {
 	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	glUniform4fv(iLoc, iCount, (GLfloat*)vVectors);
 }
 
-void CShaderProgram::SetUniform(string sName, const glm::vec4 vVector)
+void CShaderProgram::SetUniform(std::string sName, const glm::vec4 vVector)
 {
 	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	glUniform4fv(iLoc, 1, (GLfloat*)&vVector);
@@ -266,13 +266,13 @@ void CShaderProgram::SetUniform(string sName, const glm::vec4 vVector)
 
 // Setting 3x3 matrices
 
-void CShaderProgram::SetUniform(string sName, glm::mat3* mMatrices, int iCount)
+void CShaderProgram::SetUniform(std::string sName, glm::mat3* mMatrices, int iCount)
 {
 	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	glUniformMatrix3fv(iLoc, iCount, FALSE, (GLfloat*)mMatrices);
 }
 
-void CShaderProgram::SetUniform(string sName, const glm::mat3 mMatrix)
+void CShaderProgram::SetUniform(std::string sName, const glm::mat3 mMatrix)
 {
 	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	glUniformMatrix3fv(iLoc, 1, FALSE, (GLfloat*)&mMatrix);
@@ -280,13 +280,13 @@ void CShaderProgram::SetUniform(string sName, const glm::mat3 mMatrix)
 
 // Setting 4x4 matrices
 
-void CShaderProgram::SetUniform(string sName, glm::mat4* mMatrices, int iCount)
+void CShaderProgram::SetUniform(std::string sName, glm::mat4* mMatrices, int iCount)
 {
 	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	glUniformMatrix4fv(iLoc, iCount, FALSE, (GLfloat*)mMatrices);
 }
 
-void CShaderProgram::SetUniform(string sName, const glm::mat4 mMatrix)
+void CShaderProgram::SetUniform(std::string sName, const glm::mat4 mMatrix)
 {
 	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	glUniformMatrix4fv(iLoc, 1, FALSE, (GLfloat*)&mMatrix);
@@ -294,14 +294,14 @@ void CShaderProgram::SetUniform(string sName, const glm::mat4 mMatrix)
 
 // Setting integers
 
-void CShaderProgram::SetUniform(string sName, int* iValues, int iCount)
+void CShaderProgram::SetUniform(std::string sName, int* iValues, int iCount)
 {
 	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	glUniform1iv(iLoc, iCount, iValues);
 }
 
-void CShaderProgram::SetUniform(string sName, const int iValue)
+void CShaderProgram::SetUniform(std::string sName, const int iValue)
 {
-	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
+    int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	glUniform1i(iLoc, iValue);
 }

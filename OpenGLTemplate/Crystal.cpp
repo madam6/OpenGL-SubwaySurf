@@ -16,7 +16,7 @@ CCrystal::~CCrystal()
 {
 }
 
-void CCrystal::Create(string a_sDirectory, string a_sFilename)
+void CCrystal::Create(std::string a_sDirectory, std::string a_sFilename)
 {
 	m_texture.Load(a_sDirectory + a_sFilename);
 
@@ -80,12 +80,12 @@ void CCrystal::readFromCSV()
 {
 	m_crystalVertices.clear();
 
-	ifstream f("crystal.csv");
-	string line;
+	std::ifstream f("crystal.csv");
+	std::string line;
 
 	while (getline(f, line)) {
-		stringstream ss(line);
-		string val;
+		std::stringstream ss(line);
+		std::string val;
 
 		vertex newVertex;
 

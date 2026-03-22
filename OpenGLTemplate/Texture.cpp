@@ -36,7 +36,7 @@ void CTexture::CreateFromData(BYTE* data, int width, int height, int bpp, GLenum
 }
 
 // Loads a 2D texture given the filename (sPath).  bGenerateMipMaps will generate a mipmapped texture if true
-bool CTexture::Load(string path, bool generateMipMaps)
+bool CTexture::Load(std::string path, bool generateMipMaps)
 {
 	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
 	FIBITMAP* dib(0);

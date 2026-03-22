@@ -1,5 +1,5 @@
 #version 400 core
-
+#define LIGHTS_MAX 8
 // Structure for matrices
 uniform struct Matrices
 {
@@ -26,8 +26,9 @@ struct MaterialInfo
 	float shininess;
 };
 
-// Lights and materials passed in as uniform variables from client programme
-uniform LightInfo light1; 
+
+uniform LightInfo lights[LIGHTS_MAX];
+uniform int numLights;
 uniform MaterialInfo material1; 
 
 // Layout of vertex attributes in VBO
@@ -46,21 +47,33 @@ out vec3 worldPosition;	// used for skybox
 // Please see Chapter 2 of the book for a detailed discussion.
 vec3 PhongModel(vec4 eyePosition, vec3 eyeNorm)
 {
-	vec3 s = normalize(vec3(light1.position - eyePosition));
 	vec3 v = normalize(-eyePosition.xyz);
-	vec3 r = reflect(-s, eyeNorm);
-	vec3 n = eyeNorm;
-	vec3 ambient = light1.La * material1.Ma;
-	float sDotN = max(dot(s, n), 0.0f);
-	vec3 diffuse = light1.Ld * material1.Md * sDotN;
-	vec3 specular = vec3(0.0f);
-	float eps = 0.000001f; // add eps to shininess below -- pow not defined if second argument is 0 (as described in GLSL documentation)
-	if (sDotN > 0.0f) 
-		specular = light1.Ls * material1.Ms * pow(max(dot(r, v), 0.0f), material1.shininess + eps);
-	
+    vec3 n = normalize(eyeNorm);
 
-	return ambient + diffuse + specular;
+    vec3 ambient = vec3(0.0);
+    vec3 diffuse = vec3(0.0);
+    vec3 specular = vec3(0.0);
 
+    float eps = 0.000001;
+
+    for (int i = 0; i < numLights; i++)
+    {
+        vec3 s = normalize(vec3(lights[i].position - eyePosition));
+        vec3 r = reflect(-s, n);
+
+        float sDotN = max(dot(s, n), 0.0);
+
+		// Accumulating per light
+        ambient += lights[i].La * material1.Ma;
+
+        diffuse += lights[i].Ld * material1.Md * sDotN;
+
+        if (sDotN > 0.0)
+        {
+            specular += lights[i].Ls * material1.Ms * pow(max(dot(r, v), 0.0), material1.shininess + eps);
+        }
+    }
+    return ambient + diffuse + specular;
 }
 
 // This is the entry point into the vertex shader

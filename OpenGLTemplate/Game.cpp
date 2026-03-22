@@ -32,10 +32,12 @@ Source code drawn from a number of sources and examples, including contributions
 #include "GameWindow.h"
 
 // Game includes
+#include "Renderer.h"
 #include "Camera.h"
 #include "CatmullRom.h"
 #include "Crystal.h"
 #include "Skybox.h"
+#include "EntityParser.h"
 #include "Plane.h"
 #include "Shaders.h"
 #include "FreeTypeFont.h"
@@ -67,40 +69,6 @@ Game::Game()
 	m_cameraSpeed = 0.1f;
 }
 
-glm::mat3 getXZRotMatrix(int degrees)
-{
-	float radians = glm::radians(static_cast<float>(degrees));
-	float c = cos(radians);
-	float s = sin(radians);
-
-	glm::mat3 newMat3
-	(
-		c, 0.0f, s,
-		0.0f, 1.0f, 0.0f,
-		-s, 0.0f, c
-	);
-
-	return newMat3;
-}
-
-void performCalculation()
-{
-	glm::vec3 scaledVec(0.866, 0, 0.5);
-	for (int degree = 60; degree < 360; degree += 60)
-	{
-		glm::vec3 result = scaledVec * getXZRotMatrix(degree);
-
-		std::string message =
-			"Resulting vector for step: " +
-			std::to_string(degree) +
-			" is: " +
-			glm::to_string(result) +
-			"\n";
-
-		OutputDebugStringA(message.c_str());
-	}
-}
-
 
 // Destructor
 Game::~Game() 
@@ -126,37 +94,134 @@ Game::~Game()
 }
 
 // Initialisation:  This method only runs once at startup
-void Game::Initialise() 
+void Game::Initialise()
 {
-	// Set the clear colour and depth
 	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	glClearDepth(1.0f);
 
-	/// Create objects
 	m_pCamera = new CCamera;
 	m_pSkybox = new CSkybox;
-	m_pShaderPrograms = new vector <CShaderProgram *>;
+	m_pShaderPrograms = new std::vector<CShaderProgram*>;
 	m_pPlanarTerrain = new CPlane;
 	m_pFtFont = new CFreeTypeFont;
-	m_pBarrelMesh = new COpenAssetImportMesh;
-	m_pHorseMesh = new COpenAssetImportMesh;
-	m_pSphere = new CSphere;
 	m_pAudio = new CAudio;
-	m_pCrystal = make_unique<CCrystal>();
-	m_CatmulRom = make_unique<CCatmullRom>();
+	m_Renderer = std::make_unique<Renderer>();
 
 	RECT dimensions = m_gameWindow.GetDimensions();
-
 	int width = dimensions.right - dimensions.left;
 	int height = dimensions.bottom - dimensions.top;
 
-	// Set the orthographic and perspective projection matrices based on the image size
-	m_pCamera->SetOrthographicProjectionMatrix(width, height); 
-	m_pCamera->SetPerspectiveProjectionMatrix(45.0f, (float) width / (float) height, 0.5f, 5000.0f);
+	m_pCamera->SetOrthographicProjectionMatrix(width, height);
+	m_pCamera->SetPerspectiveProjectionMatrix(45.0f, (float)width / (float)height, 0.5f, 5000.0f);
 
+	m_pSkybox->Create(2500.0f);
+	m_pPlanarTerrain->Create("resources\\textures\\", "grassfloor01.jpg", 2000.0f, 2000.0f, 50.0f);
+	m_pFtFont->LoadSystemFont("arial.ttf", 32);
+
+	m_pAudio->Initialise();
+	m_pAudio->LoadEventSound("resources\\Audio\\Boing.wav");
+	m_pAudio->LoadMusicStream("resources\\Audio\\DST-Garote.mp3");
+	m_pAudio->PlayMusicStream();
+
+	InitShaders();
+
+	std::vector<std::string> entityLines = ReadEntityLines("resources\\entities.cfg");
+
+	for (const auto& line : entityLines)
+	{
+		std::vector<std::string> linesForEntity = { line };
+		m_entities.push_back(EntityParser::Create(linesForEntity));
+	}
+
+	for (auto& entityPtr : m_entities)
+	{
+		entityPtr->Init();
+	}
+}
+
+void Game::Render()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+
+	glutil::MatrixStack modelViewMatrixStack;
+	modelViewMatrixStack.SetIdentity();
+
+	CShaderProgram* pMainProgram = (*m_pShaderPrograms)[0];
+	pMainProgram->UseProgram();
+	pMainProgram->SetUniform("bUseTexture", true);
+	pMainProgram->SetUniform("sampler0", 0);
+
+
+	int cubeMapTextureUnit = 10;
+	pMainProgram->SetUniform("CubeMapTex", cubeMapTextureUnit);
+
+	pMainProgram->SetUniform("matrices.projMatrix", m_pCamera->GetPerspectiveProjectionMatrix());
+
+	modelViewMatrixStack.LookAt(m_pCamera->GetPosition(), m_pCamera->GetView(), m_pCamera->GetUpVector());
+	glm::mat4 viewMatrix = modelViewMatrixStack.Top();
+
+	pMainProgram->SetUniform("numLights", 1);
+
+	glm::vec4 lightPosition1 = glm::vec4(-100, 100, -100, 1);
+
+	pMainProgram->SetUniform("lights[0].position", viewMatrix * lightPosition1);
+	pMainProgram->SetUniform("lights[0].La", glm::vec3(1.0f));
+	pMainProgram->SetUniform("lights[0].Ld", glm::vec3(1.0f));
+	pMainProgram->SetUniform("lights[0].Ls", glm::vec3(1.0f));
+
+
+	pMainProgram->SetUniform("material1.Ma", glm::vec3(1.0f));
+	pMainProgram->SetUniform("material1.Md", glm::vec3(0.0f));
+	pMainProgram->SetUniform("material1.Ms", glm::vec3(0.0f));
+	pMainProgram->SetUniform("material1.shininess", 15.0f);
+
+
+	modelViewMatrixStack.Push();
+	pMainProgram->SetUniform("renderSkybox", true);
+
+	glm::vec3 vEye = m_pCamera->GetPosition();
+	modelViewMatrixStack.Translate(vEye);
+	pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
+	pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
+	m_pSkybox->Render(cubeMapTextureUnit);
+	pMainProgram->SetUniform("renderSkybox", false);
+	modelViewMatrixStack.Pop();
+
+
+	modelViewMatrixStack.Push();
+	pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
+	pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
+	m_pPlanarTerrain->Render();
+	modelViewMatrixStack.Pop();
+
+
+	pMainProgram->SetUniform("material1.Ma", glm::vec3(0.5f));
+	pMainProgram->SetUniform("material1.Md", glm::vec3(0.5f));
+	pMainProgram->SetUniform("material1.Ms", glm::vec3(1.0f));
+
+	modelViewMatrixStack.Push();
+
+	pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
+	pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
+
+
+	for (auto& entityPtr : m_entities)
+	{
+		entityPtr->AddRenderData(m_Renderer->m_RenderQueue);
+	}
+	modelViewMatrixStack.Pop();
+
+	DisplayFrameRate();
+
+	SwapBuffers(m_gameWindow.Hdc());
+}
+
+void Game::InitShaders()
+{
 	// Load shaders
-	vector<CShader> shShaders;
-	vector<string> sShaderFileNames;
+	std::vector<CShader> shShaders;
+	std::vector<std::string> sShaderFileNames;
 	sShaderFileNames.push_back("mainShader.vert");
 	sShaderFileNames.push_back("mainShader.frag");
 	sShaderFileNames.push_back("textShader.vert");
@@ -164,8 +229,8 @@ void Game::Initialise()
 	sShaderFileNames.push_back("crystalShader.vert");
 	sShaderFileNames.push_back("crystalShader.frag");
 
-	for (int i = 0; i < (int) sShaderFileNames.size(); i++) {
-		string sExt = sShaderFileNames[i].substr((int) sShaderFileNames[i].size()-4, 4);
+	for (int i = 0; i < (int)sShaderFileNames.size(); i++) {
+		std::string sExt = sShaderFileNames[i].substr((int)sShaderFileNames[i].size() - 4, 4);
 		int iShaderType;
 		if (sExt == "vert") iShaderType = GL_VERTEX_SHADER;
 		else if (sExt == "frag") iShaderType = GL_FRAGMENT_SHADER;
@@ -173,12 +238,12 @@ void Game::Initialise()
 		else if (sExt == "tcnl") iShaderType = GL_TESS_CONTROL_SHADER;
 		else iShaderType = GL_TESS_EVALUATION_SHADER;
 		CShader shader;
-		shader.LoadShader("resources\\shaders\\"+sShaderFileNames[i], iShaderType);
+		shader.LoadShader("resources\\shaders\\" + sShaderFileNames[i], iShaderType);
 		shShaders.push_back(shader);
 	}
 
 	// Create the main shader program
-	CShaderProgram *pMainProgram = new CShaderProgram;
+	CShaderProgram* pMainProgram = new CShaderProgram;
 	pMainProgram->CreateProgram();
 	pMainProgram->AddShaderToProgram(&shShaders[0]);
 	pMainProgram->AddShaderToProgram(&shShaders[1]);
@@ -186,12 +251,13 @@ void Game::Initialise()
 	m_pShaderPrograms->push_back(pMainProgram);
 
 	// Create a shader program for fonts
-	CShaderProgram *pFontProgram = new CShaderProgram;
+	CShaderProgram* pFontProgram = new CShaderProgram;
 	pFontProgram->CreateProgram();
 	pFontProgram->AddShaderToProgram(&shShaders[2]);
 	pFontProgram->AddShaderToProgram(&shShaders[3]);
 	pFontProgram->LinkProgram();
 	m_pShaderPrograms->push_back(pFontProgram);
+	m_pFtFont->SetShaderProgram(pFontProgram);
 
 	CShaderProgram* pCrystalProgram = new CShaderProgram;
 	pCrystalProgram->CreateProgram();
@@ -199,161 +265,34 @@ void Game::Initialise()
 	pCrystalProgram->AddShaderToProgram(&shShaders[5]);
 	pCrystalProgram->LinkProgram();
 	m_pShaderPrograms->push_back(pCrystalProgram);
-
-	// You can follow this pattern to load additional shaders
-
-	// Create the skybox
-	// Skybox downloaded from http://www.akimbo.in/forum/viewtopic.php?f=10&t=9
-	m_pSkybox->Create(2500.0f);
-	
-	// Create the planar terrain
-	m_pPlanarTerrain->Create("resources\\textures\\", "grassfloor01.jpg", 2000.0f, 2000.0f, 50.0f); // Texture downloaded from http://www.psionicgames.com/?page_id=26 on 24 Jan 2013
-
-	m_pFtFont->LoadSystemFont("arial.ttf", 32);
-	m_pFtFont->SetShaderProgram(pFontProgram);
-
-	// Load some meshes in OBJ format
-	m_pBarrelMesh->Load("resources\\models\\Barrel\\Barrel02.obj");  // Downloaded from http://www.psionicgames.com/?page_id=24 on 24 Jan 2013
-	m_pHorseMesh->Load("resources\\models\\Horse\\Horse2.obj");  // Downloaded from http://opengameart.org/content/horse-lowpoly on 24 Jan 2013
-
-	// Create a sphere
-	m_pSphere->Create("resources\\textures\\", "dirtpile01.jpg", 25, 25);  // Texture downloaded from http://www.psionicgames.com/?page_id=26 on 24 Jan 2013
-	glEnable(GL_CULL_FACE);
-
-	// Creating my crystal
-	m_pCrystal->Create("resources\\textures\\", "crystalTexture.jpg");
-
-	// Creating the whole track
-	m_CatmulRom->CreateCentreline();
-	m_CatmulRom->CreateOffsetCurves();
-	m_CatmulRom->CreateTrack("resources\\textures\\", "road.jpg");
-
-	// Initialise audio and play background music
-	m_pAudio->Initialise();
-	m_pAudio->LoadEventSound("resources\\Audio\\Boing.wav");					// Royalty free sound from freesound.org
-	m_pAudio->LoadMusicStream("resources\\Audio\\DST-Garote.mp3");	// Royalty free music from http://www.nosoapradio.us/
-	m_pAudio->PlayMusicStream();
 }
 
-// Render method runs repeatedly in a loop
-void Game::Render() 
+std::vector<std::string> Game::ReadEntityLines(const std::string& filename)
 {
-	
-	// Clear the buffers and enable depth testing (z-buffering)
-	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_DEPTH_TEST);
+	std::vector<std::string> lines;
+	std::ifstream file(filename);
+	if (!file.is_open())
+	{
+		std::cerr << "Failed to open " << filename << std::endl;
+		return lines;
+	}
 
-	// Set up a matrix stack
-	glutil::MatrixStack modelViewMatrixStack;
-	modelViewMatrixStack.SetIdentity();
-
-	// Use the main shader program 
-	CShaderProgram *pMainProgram = (*m_pShaderPrograms)[0];
-	pMainProgram->UseProgram();
-	pMainProgram->SetUniform("bUseTexture", true);
-	pMainProgram->SetUniform("sampler0", 0);
-	// Note: cubemap and non-cubemap textures should not be mixed in the same texture unit.  Setting unit 10 to be a cubemap texture.
-	int cubeMapTextureUnit = 10; 
-	pMainProgram->SetUniform("CubeMapTex", cubeMapTextureUnit);
-	
-
-	// Set the projection matrix
-	pMainProgram->SetUniform("matrices.projMatrix", m_pCamera->GetPerspectiveProjectionMatrix());
-
-	// Call LookAt to create the view matrix and put this on the modelViewMatrix stack. 
-	// Store the view matrix and the normal matrix associated with the view matrix for later (they're useful for lighting -- since lighting is done in eye coordinates)
-	modelViewMatrixStack.LookAt(m_pCamera->GetPosition(), m_pCamera->GetView(), m_pCamera->GetUpVector());
-	glm::mat4 viewMatrix = modelViewMatrixStack.Top();
-	glm::mat3 viewNormalMatrix = m_pCamera->ComputeNormalMatrix(viewMatrix);
-
-	
-	// Set light and materials in main shader program
-	glm::vec4 lightPosition1 = glm::vec4(-100, 100, -100, 1); // Position of light source *in world coordinates*
-	pMainProgram->SetUniform("light1.position", viewMatrix*lightPosition1); // Position of light source *in eye coordinates*
-	pMainProgram->SetUniform("light1.La", glm::vec3(1.0f));		// Ambient colour of light
-	pMainProgram->SetUniform("light1.Ld", glm::vec3(1.0f));		// Diffuse colour of light
-	pMainProgram->SetUniform("light1.Ls", glm::vec3(1.0f));		// Specular colour of light
-	pMainProgram->SetUniform("material1.Ma", glm::vec3(1.0f));	// Ambient material reflectance
-	pMainProgram->SetUniform("material1.Md", glm::vec3(0.0f));	// Diffuse material reflectance
-	pMainProgram->SetUniform("material1.Ms", glm::vec3(0.0f));	// Specular material reflectance
-	pMainProgram->SetUniform("material1.shininess", 15.0f);		// Shininess material property
-		
-
-	// Render the skybox and terrain with full ambient reflectance 
-	modelViewMatrixStack.Push();
-		pMainProgram->SetUniform("renderSkybox", true);
-		// Translate the modelview matrix to the camera eye point so skybox stays centred around camera
-		glm::vec3 vEye = m_pCamera->GetPosition();
-		modelViewMatrixStack.Translate(vEye);
-		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
-		pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
-		m_pSkybox->Render(cubeMapTextureUnit);
-		pMainProgram->SetUniform("renderSkybox", false);
-	modelViewMatrixStack.Pop();
-
-	// Render the planar terrain
-	modelViewMatrixStack.Push();
-		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
-		pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
-		m_pPlanarTerrain->Render();
-	modelViewMatrixStack.Pop();
-
-
-	// Turn on diffuse + specular materials
-	pMainProgram->SetUniform("material1.Ma", glm::vec3(0.5f));	// Ambient material reflectance
-	pMainProgram->SetUniform("material1.Md", glm::vec3(0.5f));	// Diffuse material reflectance
-	pMainProgram->SetUniform("material1.Ms", glm::vec3(1.0f));	// Specular material reflectance	
-
-
-	// Use the main shader program 
-	CShaderProgram* pCrystalShader = m_pShaderPrograms->back();
-	pCrystalShader->UseProgram();
-	pCrystalShader->SetUniform("bUseTexture", true);
-	pCrystalShader->SetUniform("sampler0", 0);
-	
-	float objectYPos = 16.f;
-	float objectScale = 6.f;
-
-	pCrystalShader->SetUniform("matrices.projMatrix", m_pCamera->GetPerspectiveProjectionMatrix());
-	modelViewMatrixStack.Push();
-		modelViewMatrixStack.Translate(glm::vec3(0.f, objectYPos, 0.f));
-		modelViewMatrixStack.Scale(objectScale);
-		pCrystalShader->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
-		pCrystalShader->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
-		m_pCrystal->Render();
-	modelViewMatrixStack.Pop();
-	
-	pMainProgram->UseProgram();
-
-	pMainProgram->SetUniform("bUseTexture", true);
-	pMainProgram->SetUniform("sampler0", 0);
-	m_CatmulRom->RenderTrack();
-
-	// Draw the 2D graphics after the 3D graphics
-	DisplayFrameRate();
-
-	// Swap buffers to show the rendered image
-	SwapBuffers(m_gameWindow.Hdc());		
-
+	std::string line;
+	while (std::getline(file, line))
+	{
+		if (line.empty() || line[0] == '#') continue;
+		lines.push_back(line);
+	}
+	return lines;
 }
 
 // Update method runs repeatedly with the Render method
 void Game::Update() 
 {
-	m_currentDistance += m_dt * m_cameraSpeed;
-	glm::vec3 p;
-	m_CatmulRom->Sample(m_currentDistance, p);
-
-	glm::vec3 pNext;
-	m_CatmulRom->Sample(m_currentDistance + 1.f, pNext);
-
-	glm::vec3 tangentVectorT = glm::normalize(pNext - p);
-	glm::vec3 N = glm::normalize(glm::cross(tangentVectorT, (glm::vec3(0.f, 1.f, 0.f))));
-	glm::vec3 B = glm::normalize(glm::cross(N, tangentVectorT));
-
-	float distanceFactor = 40.f;
-	float heightFactor = 40.f;
-	p = p + (distanceFactor * N) + (heightFactor * B);
+	for (auto& entityPtr : m_entities)
+	{
+		entityPtr->Update(m_dt);
+	}
 
 	m_pCamera->Update(m_dt);
 	m_pAudio->Update();
@@ -363,8 +302,6 @@ void Game::Update()
 
 void Game::DisplayFrameRate()
 {
-
-
 	CShaderProgram *fontProgram = (*m_pShaderPrograms)[1];
 
 	RECT dimensions = m_gameWindow.GetDimensions();
@@ -537,8 +474,6 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE, PSTR, int)
 {
 	Game &game = Game::GetInstance();
 	game.SetHinstance(hinstance);
-
-	performCalculation();
 
 	return int(game.Execute());
 }

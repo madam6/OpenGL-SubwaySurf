@@ -16,12 +16,12 @@ public:
 	CFreeTypeFont();
 	~CFreeTypeFont();
 
-	bool LoadFont(string file, int pixelSize);
-	bool LoadSystemFont(string name, int pixelSize);
+	bool LoadFont(std::string file, int pixelSize);
+	bool LoadSystemFont(std::string name, int pixelSize);
 
-	int GetTextWidth(string text, int pixelSize);
+	int GetTextWidth(std::string text, int pixelSize);
 
-	void Print(string text, int x, int y, int pixelSize = -1);
+	void Print(std::string text, int x, int y, int pixelSize = -1);
 	void Render(int x, int y, int pixelSize, const char* text, ...);
 
 	

@@ -8,7 +8,7 @@ struct camData
 {
 	glm::vec3 position;// The position of the camera's centre of projection
 	glm::vec3 viewpoint;// The camera's viewpoint (point where the camera is looking);
-	glm::vec3 upVector;// The camera's up vector
+	glm::vec3 upVector;// The camera's up std::vector
 };
 
 enum mode
@@ -25,13 +25,13 @@ public:
 
 	glm::vec3 GetPosition() const;					// Gets the position of the camera centre of projection
 	glm::vec3 GetView() const;						// Gets the position of the camera view point
-	glm::vec3 GetUpVector() const;					// Gets the camera up vector
-	glm::vec3 GetStrafeVector() const;				// Gets the camera strafe vector
+	glm::vec3 GetUpVector() const;					// Gets the camera up std::vector
+	glm::vec3 GetStrafeVector() const;				// Gets the camera strafe std::vector
 	glm::mat4* GetPerspectiveProjectionMatrix();	// Gets the camera perspective projection matrix
 	glm::mat4* GetOrthographicProjectionMatrix();	// Gets the camera orthographic projection matrix
 	glm::mat4 GetViewMatrix();						// Gets the camera view matrix - note this is not stored in the class but returned using glm::lookAt() in GetViewMatrix()
 
-	// Set the camera position, viewpoint, and up vector
+	// Set the camera position, viewpoint, and up std::vector
 	void Set(const camData& camData);
 	
 	// Respond to keyboard presses on arrow keys to translate the camera
@@ -59,9 +59,9 @@ private:
 	void DecrementCameraIndexSafe();
 
 	camData m_CamData;
-	vector<std::unique_ptr<CameraMode>> m_CameraModes;
+	std::vector<std::unique_ptr<CameraMode>> m_CameraModes;
 	size_t m_CameraModeIndex;
-	glm::vec3 m_strafeVector;		// The camera's strafe vector
+	glm::vec3 m_strafeVector;		// The camera's strafe std::vector
 
 	float m_speed;					// How fast the camera moves
 

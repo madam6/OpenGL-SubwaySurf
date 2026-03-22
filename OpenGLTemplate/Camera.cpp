@@ -20,7 +20,7 @@ CCamera::CCamera()
 CCamera::~CCamera()
 {}
  
-// Set the camera at a specific position, looking at the view point, with a given up vector
+// Set the camera at a specific position, looking at the view point, with a given up std::vector
 void CCamera::Set(const camData& camData)
 {
 	m_CamData = camData;
@@ -137,13 +137,13 @@ glm::vec3 CCamera::GetView() const
 	return m_CamData.viewpoint;
 }
 
-// Return the camera up vector
+// Return the camera up std::vector
 glm::vec3 CCamera::GetUpVector() const
 {
 	return m_CamData.upVector;
 }
 
-// Return the camera strafe vector
+// Return the camera strafe std::vector
 glm::vec3 CCamera::GetStrafeVector() const
 {
 	return m_strafeVector;

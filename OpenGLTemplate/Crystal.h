@@ -14,7 +14,7 @@ class CCrystal
 public:
 	CCrystal();
 	~CCrystal();
-	void Create(string directory, string front);
+	void Create(std::string directory, std::string front);
 	void Render();
 	void Release();
 private:
@@ -25,8 +25,8 @@ private:
 	UINT m_vao;
 	CVertexBufferObject m_vbo;
 	CTexture m_texture;
-	string m_directory;
-	string m_filename;
+	std::string m_directory;
+	std::string m_filename;
 	
-	vector<vertex> m_crystalVertices;
+	std::vector<vertex> m_crystalVertices;
 };

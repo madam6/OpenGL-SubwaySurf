@@ -33,7 +33,7 @@ private:
 	GameWindow(const GameWindow&);
 	void operator=(const GameWindow&);
 
-	void CreateGameWindow(string title);
+	void CreateGameWindow(std::string title);
 	void InitOpenGL();
 	bool InitGLEW();
 	void RegisterSimpleOpenGLClass(HINSTANCE hInstance);
@@ -48,7 +48,7 @@ private:
 	LPSTR m_class;
 	RECT  m_dimensions;
 
-	string m_appName;
+	std::string m_appName;
 
 };
 

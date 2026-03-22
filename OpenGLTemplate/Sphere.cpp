@@ -13,7 +13,7 @@ CSphere::~CSphere()
 {}
 
 // Create a unit sphere 
-void CSphere::Create(string a_sDirectory, string a_sFilename, int slicesIn, int stacksIn)
+void CSphere::Create(std::string a_sDirectory, std::string a_sFilename, int slicesIn, int stacksIn)
 {
 	// check if filename passed in -- if so, load texture
 

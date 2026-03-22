@@ -21,8 +21,8 @@ private:
 	GLuint m_vboVertices;		// VBO id for vertices
 	GLuint m_vboIndices;		// VBO id for indices
 
-	vector<BYTE> m_vertexData;	// Vertex data to be uploaded
-	vector<BYTE> m_indexData;	// Index data to be uploaded
+	std::vector<BYTE> m_vertexData;	// Vertex data to be uploaded
+	std::vector<BYTE> m_indexData;	// Index data to be uploaded
 
 	bool m_dataUploaded;		// Flag indicating if data is uploaded to the GPU
 };

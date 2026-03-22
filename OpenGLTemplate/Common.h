@@ -4,6 +4,10 @@
 #include <cstring>
 #include <vector>
 #include <sstream>
+#include <unordered_map>
+#include <functional>
+#include <fstream>
+#include <sstream>
 
 #include "./include/glm/gtc/type_ptr.hpp"
 #include "./include/glm/gtc/matrix_transform.hpp"
@@ -16,4 +20,5 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-using namespace std;
+
+using PropertyMap = std::unordered_map<std::string, std::string>;

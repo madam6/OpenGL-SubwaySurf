@@ -30,7 +30,7 @@ glm::vec3 CCatmullRom::Interpolate(glm::vec3& p0, glm::vec3& p1, glm::vec3& p2, 
 }
 
 
-void CCatmullRom::CreateListGPUData(GLuint& vaoId, vector<glm::vec3>& points)
+void CCatmullRom::CreateListGPUData(GLuint& vaoId, std::vector<glm::vec3>& points)
 {
 	glGenVertexArrays(1, &vaoId);
 	glBindVertexArray(vaoId);
@@ -150,7 +150,10 @@ bool CCatmullRom::Sample(float d, glm::vec3& p, glm::vec3& up)
 	return true;
 }
 
-
+void CCatmullRom::SetTrackFile(const std::string& newFile)
+{
+	m_File = newFile;
+}
 
 // Sample a set of control points using an open Catmull-Rom spline, to produce a set of iNumSamples that are (roughly) equally spaced
 void CCatmullRom::UniformlySampleControlPoints(int numSamples)
@@ -195,38 +198,38 @@ void CCatmullRom::UniformlySampleControlPoints(int numSamples)
 
 void CCatmullRom::ReadTrackCsv()
 {
-	ifstream f("path/track1.csv");
-	string line;
+	std::ifstream f(m_File);
+	std::string line;
 
-	while (getline(f, line))
+	while (std::getline(f, line))
 	{
-		stringstream ss(line);
-		string val;
+		std::stringstream ss(line);
+		std::string val;
 
 		glm::vec3 splinePoint;
 		glm::vec3 splinePointUpVector;
 
 		float x, y, z;
 
-		getline(ss, val, ',');
+		std::getline(ss, val, ',');
 		x = static_cast<float>(stof(val));
 
-		getline(ss, val, ',');
+		std::getline(ss, val, ',');
 		y = static_cast<float>(stof(val));
 
-		getline(ss, val, ',');
+		std::getline(ss, val, ',');
 		z = static_cast<float>(stof(val));
 
 		splinePoint = glm::vec3(x, y, z);
 
 
-		getline(ss, val, ',');
+		std::getline(ss, val, ',');
 		x = static_cast<float>(stof(val));
 
-		getline(ss, val, ',');
+		std::getline(ss, val, ',');
 		y = static_cast<float>(stof(val));
 
-		getline(ss, val, ',');
+		std::getline(ss, val, ',');
 		z = static_cast<float>(stof(val));
 
 		splinePointUpVector = glm::vec3(x, y, z);
@@ -290,7 +293,7 @@ void CCatmullRom::CreateTrack()
 	CreateListGPUData(m_vaoTrack, m_trianglePoints);
 }
 
-void CCatmullRom::CreateTrack(string a_sDirectory, string a_sFilename)
+void CCatmullRom::CreateTrack(std::string a_sDirectory, std::string a_sFilename)
 {
 	m_texture.Load(a_sDirectory + a_sFilename);
 	m_texture.SetSamplerObjectParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);

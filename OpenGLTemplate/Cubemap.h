@@ -7,9 +7,9 @@
 class CCubemap
 {
 public:
-	void Create(string sPositiveX, string sNegativeX, string sPositiveY, string sNegativeY, string sPositiveZ, string sNegativeZ);
+	void Create(std::string sPositiveX, std::string sNegativeX, std::string sPositiveY, std::string sNegativeY, std::string sPositiveZ, std::string sNegativeZ);
 	void Release();
-	bool LoadTexture(string filename, BYTE **bmpBytes, int &iWidth, int &iHeight);
+	bool LoadTexture(std::string filename, BYTE **bmpBytes, int &iWidth, int &iHeight);
 	void Bind(int iTextureUnit = 0);
 
 

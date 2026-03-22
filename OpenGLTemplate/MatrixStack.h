@@ -155,7 +155,7 @@ namespace glutil
 		
 		\param cameraPos The world-space position of the camera.
 		\param lookatPos The world-space position the camera should be facing. It should not be equal to \a cameraPos.
-		\param upDir The world-space direction vector that should be considered up. The generated matrix will be bad
+		\param upDir The world-space direction std::vector that should be considered up. The generated matrix will be bad
 		if the up direction is along the same direction as the direction the camera faces (the direction between
 		\a cameraPos and \a lookatPos).
 		**/
