@@ -32,6 +32,12 @@ std::unique_ptr<Entity> EntityParser::Create(const std::vector<std::string>& lin
     {
         if (line.empty()) continue;
 
+        if (line.find("EntityName:") == 0)
+        {
+            entity->m_Name = line.substr(11);
+            continue;
+        }
+
         std::istringstream ss(line);
         std::string componentName;
         ss >> componentName;
@@ -40,8 +46,9 @@ std::unique_ptr<Entity> EntityParser::Create(const std::vector<std::string>& lin
         std::string args;
         std::getline(ss, args);
         if (!args.empty() && args[0] == ' ')
+        {
             args.erase(0, 1);
-
+        }
         PropertyMap props = ParseArgs(args);
 
         auto* factory = ComponentRegistry::Instance().Get(componentName);

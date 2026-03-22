@@ -2,6 +2,7 @@
 #include "Common.h"
 #include "Component.h"
 struct RenderData;
+class EntityParser;
 class Entity
 {
 public:
@@ -20,6 +21,9 @@ public:
 		m_Components.emplace_back(std::move(comp));
 		return ref;
 	}
+
+	friend class EntityParser;
 private:
 	std::vector<std::unique_ptr<Component>> m_Components;
+	std::string m_Name;
 };
