@@ -18,8 +18,25 @@ public:
 	{
 		auto comp = std::make_unique<T>(std::forward<Args>(args)...);
 		T& ref = *comp;
+
+		ref.SetOwner(this);
+
 		m_Components.emplace_back(std::move(comp));
 		return ref;
+	}
+
+	template<typename T>
+	T* FindComponent()
+	{
+		for (auto& component : m_Components)
+		{
+			T* ptr = dynamic_cast<T*>(component.get());
+			if (ptr != nullptr)
+			{
+				return ptr;
+			}
+		}
+		return nullptr;
 	}
 
 	friend class EntityParser;

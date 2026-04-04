@@ -78,7 +78,6 @@ private:
 	// Pointers to game objects.  They will get allocated in Game::Initialise()
 	CSkybox *m_pSkybox;
 	CCamera *m_pCamera;
-	std::vector <CShaderProgram *> *m_pShaderPrograms;
 	CPlane *m_pPlanarTerrain;
 	CFreeTypeFont *m_pFtFont;
 	COpenAssetImportMesh *m_pBarrelMesh;
@@ -108,13 +107,14 @@ public:
 	LRESULT ProcessEvents(HWND window,UINT message, WPARAM w_param, LPARAM l_param);
 	void SetHinstance(HINSTANCE hinstance);
 	WPARAM Execute();
-
+	CShaderProgram* GetShader(const std::string& name) const;
 private:
 	static const int FPS = 60;
 	void DisplayFrameRate();
 	void GameLoop();
 	GameWindow m_gameWindow;
 	HINSTANCE m_hInstance;
+	std::unordered_map<std::string, CShaderProgram*> m_ShaderPrograms;
 	int m_frameCount;
 	double m_elapsedTime;
 

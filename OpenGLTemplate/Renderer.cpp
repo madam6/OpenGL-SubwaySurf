@@ -28,6 +28,20 @@ void Renderer::Render(const FrameData& frameData)
         shader->SetUniform("material.Md", renderable.Md);
         shader->SetUniform("material.Ms", renderable.Ms);
 
+        int numBones = renderable.mesh->GetNumBones();
+        if (numBones > 0)
+        {
+            const std::vector<BoneInfo>& boneInfo = renderable.mesh->GetBoneInfo();
+
+            std::vector<glm::mat4> boneTransforms(numBones);
+            for (int i = 0; i < numBones; ++i)
+            {
+                boneTransforms[i] = boneInfo[i].finalTransform;
+            }
+
+            shader->SetUniform("u_BoneTransforms", boneTransforms.data(), numBones);
+        }
+
         renderable.mesh->Render();
 	}
     m_RenderQueue.clear();

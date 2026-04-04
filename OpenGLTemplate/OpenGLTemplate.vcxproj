@@ -142,10 +142,13 @@
     <ClInclude Include="GameWindow.h" />
     <ClInclude Include="HighResolutionTimer.h" />
     <ClInclude Include="MatrixStack.h" />
+    <ClInclude Include="MeshComponent.h" />
+    <ClInclude Include="ModelViewComponent.h" />
     <ClInclude Include="OpenAssetImportMesh.h" />
     <ClInclude Include="PathBuilderCam.h" />
     <ClInclude Include="Plane.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="ShaderComponent.h" />
     <ClInclude Include="Shaders.h" />
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="Sphere.h" />
@@ -170,10 +173,13 @@
     <ClCompile Include="GameWindow.cpp" />
     <ClCompile Include="HighResolutionTimer.cpp" />
     <ClCompile Include="MatrixStack.cpp" />
+    <ClCompile Include="MeshComponent.cpp" />
+    <ClCompile Include="ModelViewComponent.cpp" />
     <ClCompile Include="OpenAssetImportMesh.cpp" />
     <ClCompile Include="PathBuilderCam.cpp" />
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="ShaderComponent.cpp" />
     <ClCompile Include="Shaders.cpp" />
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="Sphere.cpp" />

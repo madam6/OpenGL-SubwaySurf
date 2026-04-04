@@ -50,14 +50,27 @@ struct Vertex
     }
 };
 
+struct BoneInfo
+{
+    glm::mat4 offsetMatrix;
+    glm::mat4 finalTransform;
+};
 
 class COpenAssetImportMesh
 {
 public:
     COpenAssetImportMesh();
     ~COpenAssetImportMesh();
+
     bool Load(const std::string& Filename);
+    bool LoadFBX(const std::string& filename);
+
     void Render();
+    void UpdateAnimation(float dt);
+    void BoneTransform(float timeInSeconds, std::vector<glm::mat4>& transforms);
+
+    int GetNumBones() const { return m_NumBones; }
+    const std::vector<BoneInfo>& GetBoneInfo() const { return m_BoneInfo; }
 
 private:
     bool InitFromScene(const aiScene* pScene, const std::string& Filename);
@@ -81,8 +94,19 @@ private:
         unsigned int MaterialIndex;
     };
 
+    float m_animationTime = 0.f;
+    float m_animationSpeed = 1.f;
+
     std::vector<MeshEntry> m_Entries;
     std::vector<CTexture*> m_Textures;
+
+    std::map<std::string, int> m_BoneMapping;
+    std::vector<BoneInfo> m_BoneInfo;
+    aiAnimation* m_Animation = nullptr;
+    const aiScene* m_Scene = nullptr;
+    int m_NumBones = 0;
+
+    Assimp::Importer m_Importer;
 	GLuint m_vao;
 };
 

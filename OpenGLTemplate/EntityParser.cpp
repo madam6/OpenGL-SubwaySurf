@@ -54,7 +54,7 @@ std::unique_ptr<Entity> EntityParser::Create(const std::vector<std::string>& lin
         auto* factory = ComponentRegistry::Instance().Get(componentName);
         if (factory)
         {
-            (*factory)(*entity, props);  // pass entity by reference
+            (*factory)(*entity, props);
         }
         else
         {

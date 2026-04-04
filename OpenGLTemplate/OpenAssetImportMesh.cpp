@@ -52,6 +52,36 @@ void COpenAssetImportMesh::MeshEntry::Init(const std::vector<Vertex>& Vertices,
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * NumIndices, &Indices[0], GL_STATIC_DRAW);
 }
 
+bool COpenAssetImportMesh::LoadFBX(const std::string& filename)
+{
+    m_Scene = m_Importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_LimitBoneWeights);
+
+    if (!m_Scene || !m_Scene->mRootNode) return false;
+
+    if (m_Scene->mNumAnimations > 0)
+    {
+        m_Animation = m_Scene->mAnimations[0];
+    }
+
+    for (unsigned int i = 0; i < m_Scene->mNumMeshes; ++i)
+    {
+        aiMesh* mesh = m_Scene->mMeshes[i];
+        for (unsigned int b = 0; b < mesh->mNumBones; ++b)
+        {
+            std::string boneName(mesh->mBones[b]->mName.data);
+            if (m_BoneMapping.find(boneName) == m_BoneMapping.end())
+            {
+                BoneInfo bi;
+                bi.offsetMatrix = glm::transpose(glm::make_mat4(&mesh->mBones[b]->mOffsetMatrix.a1));
+                m_BoneInfo.push_back(bi);
+                m_BoneMapping[boneName] = m_NumBones++;
+            }
+        }
+    }
+
+    return true;
+}
+
 COpenAssetImportMesh::COpenAssetImportMesh()
 {
 }
@@ -235,4 +265,49 @@ void COpenAssetImportMesh::Render()
 
 
 
+}
+
+void COpenAssetImportMesh::UpdateAnimation(float dt)
+{
+    if (!m_Animation) return;
+    m_animationTime += dt * m_animationSpeed;
+
+    float duration = m_Animation->mDuration / m_Animation->mTicksPerSecond;
+    if (m_animationTime > duration) m_animationTime = fmod(m_animationTime, duration);
+
+    std::vector<glm::mat4> transforms(m_NumBones);
+    BoneTransform(m_animationTime, transforms);
+
+    for (int i = 0; i < m_NumBones; ++i)
+    {
+        m_BoneInfo[i].finalTransform = transforms[i];
+    }
+}
+
+void COpenAssetImportMesh::BoneTransform(float timeInSeconds, std::vector<glm::mat4>& transforms)
+{
+    std::function<void(const aiNode*, const glm::mat4&)> readNode;
+    readNode = [&](const aiNode* node, const glm::mat4& parentTransform)
+        {
+            glm::mat4 nodeTransform = glm::transpose(glm::make_mat4(&node->mTransformation.a1));
+
+            // TODO: interpolate if node has animation
+            // For now just static transform
+
+            glm::mat4 globalTransform = parentTransform * nodeTransform;
+
+            auto it = m_BoneMapping.find(node->mName.C_Str());
+            if (it != m_BoneMapping.end())
+            {
+                int index = it->second;
+                transforms[index] = globalTransform * m_BoneInfo[index].offsetMatrix;
+            }
+
+            for (unsigned int i = 0; i < node->mNumChildren; ++i)
+            {
+                readNode(node->mChildren[i], globalTransform);
+            }
+        };
+
+    readNode(m_Scene->mRootNode, glm::mat4(1.f));
 }

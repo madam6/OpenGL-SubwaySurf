@@ -52,7 +52,6 @@ Game::Game()
 {
 	m_pSkybox = NULL;
 	m_pCamera = NULL;
-	m_pShaderPrograms = NULL;
 	m_pPlanarTerrain = NULL;
 	m_pFtFont = NULL;
 	m_pBarrelMesh = NULL;
@@ -83,11 +82,11 @@ Game::~Game()
 	delete m_pSphere;
 	delete m_pAudio;
 
-	if (m_pShaderPrograms != NULL) {
-		for (unsigned int i = 0; i < m_pShaderPrograms->size(); i++)
-			delete (*m_pShaderPrograms)[i];
+	for (auto& [name, pointer] : m_ShaderPrograms)
+	{
+		delete pointer;
 	}
-	delete m_pShaderPrograms;
+	m_ShaderPrograms.clear();
 
 	//setup objects
 	delete m_pHighResolutionTimer;
@@ -101,7 +100,6 @@ void Game::Initialise()
 
 	m_pCamera = new CCamera;
 	m_pSkybox = new CSkybox;
-	m_pShaderPrograms = new std::vector<CShaderProgram*>;
 	m_pPlanarTerrain = new CPlane;
 	m_pFtFont = new CFreeTypeFont;
 	m_pAudio = new CAudio;
@@ -147,7 +145,7 @@ void Game::Render()
 	glutil::MatrixStack modelViewMatrixStack;
 	modelViewMatrixStack.SetIdentity();
 
-	CShaderProgram* pMainProgram = (*m_pShaderPrograms)[0];
+	CShaderProgram* pMainProgram = GetShader("MainShader");
 	pMainProgram->UseProgram();
 	pMainProgram->SetUniform("bUseTexture", true);
 	pMainProgram->SetUniform("sampler0", 0);
@@ -248,7 +246,7 @@ void Game::InitShaders()
 	pMainProgram->AddShaderToProgram(&shShaders[0]);
 	pMainProgram->AddShaderToProgram(&shShaders[1]);
 	pMainProgram->LinkProgram();
-	m_pShaderPrograms->push_back(pMainProgram);
+	m_ShaderPrograms["MainShader"] = pMainProgram;
 
 	// Create a shader program for fonts
 	CShaderProgram* pFontProgram = new CShaderProgram;
@@ -256,7 +254,7 @@ void Game::InitShaders()
 	pFontProgram->AddShaderToProgram(&shShaders[2]);
 	pFontProgram->AddShaderToProgram(&shShaders[3]);
 	pFontProgram->LinkProgram();
-	m_pShaderPrograms->push_back(pFontProgram);
+	m_ShaderPrograms["FontShader"] = pFontProgram;
 	m_pFtFont->SetShaderProgram(pFontProgram);
 
 	CShaderProgram* pCrystalProgram = new CShaderProgram;
@@ -264,7 +262,7 @@ void Game::InitShaders()
 	pCrystalProgram->AddShaderToProgram(&shShaders[4]);
 	pCrystalProgram->AddShaderToProgram(&shShaders[5]);
 	pCrystalProgram->LinkProgram();
-	m_pShaderPrograms->push_back(pCrystalProgram);
+	m_ShaderPrograms["CrystalShader"] = pCrystalProgram;
 }
 
 std::vector<std::string> Game::ReadEntityLines(const std::string& filename)
@@ -286,6 +284,18 @@ std::vector<std::string> Game::ReadEntityLines(const std::string& filename)
 	return lines;
 }
 
+CShaderProgram* Game::GetShader(const std::string& name) const
+{
+	auto it = m_ShaderPrograms.find(name);
+	if (it != m_ShaderPrograms.end())
+	{
+		return it->second;
+	}
+
+	LOG_ERROR("Shader not found: %s", name.c_str());
+	return nullptr;
+}
+
 // Update method runs repeatedly with the Render method
 void Game::Update() 
 {
@@ -302,7 +312,7 @@ void Game::Update()
 
 void Game::DisplayFrameRate()
 {
-	CShaderProgram *fontProgram = (*m_pShaderPrograms)[1];
+	CShaderProgram* fontProgram = GetShader("FontShader");
 
 	RECT dimensions = m_gameWindow.GetDimensions();
 	int height = dimensions.bottom - dimensions.top;

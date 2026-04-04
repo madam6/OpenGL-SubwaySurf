@@ -117,10 +117,10 @@ void CCamera::TranslateByKeyboard(double dt)
 		IncrementCameraIndexSafe();
 
 		if (m_CurrentMode == mode::pathBuilding) {
-			OutputDebugString("Switched to PathBuilder Mode!\n");
+			DEBUG_MSG("Switched to PathBuilder Mode!");
 		}
 		else {
-			OutputDebugString("Switched to FreeCam Mode!\n");
+			DEBUG_MSG("Switched to FreeCam Mode!");
 		}
 	}
 	tabWasPressed = tabIsPressed;

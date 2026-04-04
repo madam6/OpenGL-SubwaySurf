@@ -110,6 +110,15 @@
     <ClInclude Include="CatmulRomComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MeshComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelViewComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Audio.cpp">
@@ -188,6 +197,15 @@
       <Filter>Source Files\ECS</Filter>
     </ClCompile>
     <ClCompile Include="CatmulRomComponent.cpp">
+      <Filter>Source Files\ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshComponent.cpp">
+      <Filter>Source Files\ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelViewComponent.cpp">
+      <Filter>Source Files\ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderComponent.cpp">
       <Filter>Source Files\ECS\Components</Filter>
     </ClCompile>
   </ItemGroup>
