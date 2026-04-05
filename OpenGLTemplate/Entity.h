@@ -26,21 +26,20 @@ public:
 	}
 
 	template<typename T>
-	T* FindComponent()
+	std::shared_ptr<T> FindComponent()
 	{
 		for (auto& component : m_Components)
 		{
-			T* ptr = dynamic_cast<T*>(component.get());
-			if (ptr != nullptr)
+			if (auto ptr = std::dynamic_pointer_cast<T>(component))
 			{
 				return ptr;
 			}
 		}
 		return nullptr;
 	}
-
+	std::string GetName() const { return m_Name; };
 	friend class EntityParser;
 private:
-	std::vector<std::unique_ptr<Component>> m_Components;
+	std::vector<std::shared_ptr<Component>> m_Components;
 	std::string m_Name;
 };

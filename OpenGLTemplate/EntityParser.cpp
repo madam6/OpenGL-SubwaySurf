@@ -24,9 +24,9 @@ PropertyMap ParseArgs(const std::string& args)
     return result;
 }
 
-std::unique_ptr<Entity> EntityParser::Create(const std::vector<std::string>& lines)
+std::shared_ptr<Entity> EntityParser::Create(const std::vector<std::string>& lines)
 {
-    auto entity = std::make_unique<Entity>();
+    auto entity = std::make_shared<Entity>();
 
     for (const auto& line : lines)
     {

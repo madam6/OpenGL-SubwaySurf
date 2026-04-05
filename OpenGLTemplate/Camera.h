@@ -14,7 +14,8 @@ struct camData
 enum mode
 {
 	normal,
-	pathBuilding
+	pathBuilding,
+	follow
 };
 
 class CameraMode;

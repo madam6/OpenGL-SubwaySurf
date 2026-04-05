@@ -16,10 +16,10 @@ public:
     void Update(float dt) override;
     void SetAnimationSpeed(float speed) { if (m_Mesh) m_Mesh->SetAnimationSpeed(speed); }
 private:
-    std::unique_ptr<COpenAssetImportMesh> m_Mesh;
-    ModelViewComponent* m_ModelViewComponentRef = nullptr;
-    ShaderComponent* m_ShaderComponentRef = nullptr;
-    MaterialComponent* m_MaterialComponent = nullptr;
+    std::shared_ptr<COpenAssetImportMesh> m_Mesh;
+    std::shared_ptr<ModelViewComponent> m_ModelViewComponentRef = nullptr;
+    std::shared_ptr<ShaderComponent> m_ShaderComponentRef = nullptr;
+    std::shared_ptr<MaterialComponent> m_MaterialComponent = nullptr;
     //properties
     std::string m_MeshPath;
     bool isFBX;

@@ -340,7 +340,7 @@ void CCatmullRom::RenderOffsetCurves()
 }
 
 
-void CCatmullRom::RenderTrack()
+void CCatmullRom::Render()
 {
 	glBindVertexArray(m_vaoTrack);
 	m_texture.Bind();

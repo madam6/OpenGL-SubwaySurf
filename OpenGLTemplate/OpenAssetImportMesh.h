@@ -29,6 +29,7 @@
 
 #include "Common.h"
 #include "Texture.h"
+#include "Renderable.h"
 
 #define INVALID_OGL_VALUE 0xFFFFFFFF
 #define SAFE_DELETE(p) if (p) { delete p; p = NULL; }
@@ -82,7 +83,7 @@ struct BoneInfo
     glm::mat4 finalTransform;
 };
 
-class COpenAssetImportMesh
+class COpenAssetImportMesh : public Renderable
 {
 public:
     COpenAssetImportMesh();
@@ -91,7 +92,7 @@ public:
     bool Load(const std::string& Filename);
     bool LoadFBX(const std::string& filename);
 
-    void Render();
+    void Render() override;
     void UpdateAnimation(float dt);
     void BoneTransform(float timeInSeconds, std::vector<glm::mat4>& transforms);
 

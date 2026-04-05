@@ -3,6 +3,7 @@
 #include "CameraMode.h"
 #include "FreeCam.h"
 #include "PathBuilderCam.h"
+#include "FollowCam.h"
 
 // Constructor for camera -- initialise with some default values
 CCamera::CCamera()
@@ -11,6 +12,7 @@ CCamera::CCamera()
 	m_CamData.viewpoint = glm::vec3(0.0f, 0.0f, 0.0f);
 	m_CamData.upVector = glm::vec3(0.0f, 1.0f, 0.0f);
 	m_CameraModes.reserve(5);
+	m_CameraModes.push_back(std::make_unique<FollowCam>());
 	m_CameraModes.push_back(std::make_unique<FreeCam>());
 	m_CameraModes.push_back(std::make_unique<PathBuilderCam>());
 	m_CameraModeIndex = 0;
@@ -72,6 +74,8 @@ void CCamera::Update(double dt)
 // Update the camera to respond to key presses for translation
 void CCamera::TranslateByKeyboard(double dt)
 {
+	if (m_CurrentMode == mode::follow) return;
+
 	if (GetKeyState(VK_UP) & 0x80 || GetKeyState('W') & 0x80) {
 		Advance(1.0*dt);
 	}
@@ -189,14 +193,7 @@ glm::mat3 CCamera::ComputeNormalMatrix(const glm::mat4 &modelViewMatrix)
 void CCamera::IncrementCameraIndexSafe()
 {
 	m_CameraModeIndex = (m_CameraModeIndex + 1) % m_CameraModes.size();
-	if (m_CameraModeIndex == 1)
-	{
-		m_CurrentMode = mode::pathBuilding;
-	}
-	else
-	{
-		m_CurrentMode = mode::normal;
-	}
+	m_CurrentMode = static_cast<mode>(m_CameraModeIndex);
 }
 
 void CCamera::DecrementCameraIndexSafe()

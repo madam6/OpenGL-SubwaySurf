@@ -3,5 +3,5 @@
 class EntityParser
 {
 public:
-	static std::unique_ptr<Entity> Create(const std::vector<std::string>& lines);
+	static std::shared_ptr<Entity> Create(const std::vector<std::string>& lines);
 };

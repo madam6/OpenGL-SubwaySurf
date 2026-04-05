@@ -2,6 +2,7 @@
 #include "Component.h"
 #include "CatmullRom.h"
 
+class PlayerTrackComponent;
 class CatmullRomComponent : public Component
 {
 public:
@@ -13,11 +14,13 @@ public:
     void Apply(const PropertyMap& props);
     void Update(float dt) override;
 private:
-    CCatmullRom m_track;
+    std::shared_ptr<CCatmullRom> m_track;
     float m_distance;
     float m_speed{ 1.f };
     float m_distanceFactor;
     float m_heightFactor;
     glm::vec3 m_position;
     std::string m_file;
+
+    friend class PlayerTrackMovementComponent;
 };

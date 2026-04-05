@@ -301,6 +301,18 @@ void Game::InitShaders()
 	m_ShaderPrograms["mc"] = pMCProgram;
 }
 
+std::shared_ptr<Entity> Game::FetchEntityByName(const std::string& name)
+{
+	for (const auto& entity : m_entities)
+	{
+		if (entity->GetName() == name)
+		{
+			return entity;
+		}
+	}
+	return nullptr;
+}
+
 std::vector<std::string> Game::ReadEntityLines(const std::string& filename)
 {
 	std::vector<std::string> lines;

@@ -2,7 +2,6 @@
 
 #include "Common.h"
 #include "GameWindow.h"
-
 // Classes used in game.  For a new class, declare it here and provide a pointer to an object of this class below.  Then, in Game.cpp, 
 // include the header.  In the Game constructor, set the pointer to NULL and in Game::Initialise, create a new object.  Don't forget to 
 // delete the object in the destructor.   
@@ -20,12 +19,13 @@ class CCrystal;
 class CCatmullRom;
 class Entity;
 class Renderer;
+struct Renderable;
 struct RenderData
 {
 	glm::mat4 modelMatrix;
 	glm::mat3 normalMatrix;
 
-	COpenAssetImportMesh* mesh = nullptr;
+	std::shared_ptr<Renderable> mesh = nullptr;
 
 	glm::vec3 Ma{ 1.0f };
 	glm::vec3 Md{ 1.0f };
@@ -98,13 +98,14 @@ private:
 	int m_framesPerSecond;
 	bool m_appActive;
 
-	std::vector<std::unique_ptr<Entity>> m_entities;
+	std::vector<std::shared_ptr<Entity>> m_entities;
 
 public:
 	Game();
 	~Game();
 	static Game& GetInstance();
 	LRESULT ProcessEvents(HWND window,UINT message, WPARAM w_param, LPARAM l_param);
+	std::shared_ptr<Entity> FetchEntityByName(const std::string& name);
 	void SetHinstance(HINSTANCE hinstance);
 	WPARAM Execute();
 	CShaderProgram* GetShader(const std::string& name) const;

@@ -9,11 +9,16 @@ class ModelViewComponent : public Component
 	
 	void Update(float dt) override;
 public:
+	void SetPosition(const glm::vec3& newPosition) { position = newPosition; }
 	glm::vec3 GetPosition() const { return position; }
 	glm::vec3 GetScale() const { return scale; }
 	void Apply(const PropertyMap& props);
+
+	void SetOrientation(const glm::mat4& newOrientation) { orientation = newOrientation; }
+	glm::mat4 GetOrientation() const { return orientation; }
 private:
 	// properties
 	glm::vec3 position;
 	glm::vec3 scale;
+	glm::mat4 orientation{ 1.0f };
 };

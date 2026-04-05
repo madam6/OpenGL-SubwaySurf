@@ -5,6 +5,7 @@
 #include "Game.h"
 #include "MaterialComponent.h"
 #include "ComponentRegistry.h"
+#include "Renderable.h"
 
 namespace
 {
@@ -24,16 +25,16 @@ namespace
 
 MeshComponent::MeshComponent()
 {
-	m_Mesh = std::make_unique<COpenAssetImportMesh>();
+	m_Mesh = std::make_shared<COpenAssetImportMesh>();
 }
 
 void MeshComponent::Init()
 {
-	if (GetOwner() != nullptr)
+	if (auto owner = GetOwner())
 	{
-		m_ModelViewComponentRef = GetOwner()->FindComponent<ModelViewComponent>();
-		m_ShaderComponentRef = GetOwner()->FindComponent<ShaderComponent>();
-		m_MaterialComponent = GetOwner()->FindComponent<MaterialComponent>();
+		m_ModelViewComponentRef = owner->FindComponent<ModelViewComponent>();
+		m_ShaderComponentRef = owner->FindComponent<ShaderComponent>();
+		m_MaterialComponent = owner->FindComponent<MaterialComponent>();
 	}
 
 }
@@ -41,13 +42,14 @@ void MeshComponent::Init()
 void MeshComponent::AddRenderData(std::vector<RenderData>& renderQueue)
 {
 	RenderData data;
-	data.mesh = m_Mesh.get();
+	data.mesh = m_Mesh;
 
 	data.modelMatrix = glm::mat4(1.0f);
 
 	if (m_ModelViewComponentRef)
 	{
 		data.modelMatrix = glm::translate(data.modelMatrix, m_ModelViewComponentRef->GetPosition());
+		data.modelMatrix *= m_ModelViewComponentRef->GetOrientation();
 		data.modelMatrix = glm::scale(data.modelMatrix, m_ModelViewComponentRef->GetScale());
 	}
 
@@ -68,7 +70,7 @@ void MeshComponent::AddRenderData(std::vector<RenderData>& renderQueue)
 		data.shininess = m_MaterialComponent->GetShiny();
 	}
 	
-	renderQueue.push_back(data);
+	renderQueue.push_back(std::move(data));
 }
 
 void MeshComponent::Apply(const PropertyMap& props)

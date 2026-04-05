@@ -4,8 +4,9 @@
 #include "vertexBufferObjectIndexed.h"
 #include "Texture.h"
 #include "Component.h"
+#include "Renderable.h"
 
-class CCatmullRom
+class CCatmullRom : public Renderable
 {
 public:
 	CCatmullRom();
@@ -20,7 +21,7 @@ public:
 
 	void CreateTrack();
 	void CreateTrack(std::string a_sDirectory, std::string a_sFilename);
-	void RenderTrack();
+	void Render() override;
 
 	int CurrentLap(float d); // Return the currvent lap (starting from 0) based on distance along the control curve.
 
