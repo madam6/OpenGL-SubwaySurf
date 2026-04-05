@@ -86,6 +86,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>.\include\freetype;.\include\assimp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>.\lib</AdditionalLibraryDirectories>
@@ -141,6 +142,7 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameWindow.h" />
     <ClInclude Include="HighResolutionTimer.h" />
+    <ClInclude Include="MaterialComponent.h" />
     <ClInclude Include="MatrixStack.h" />
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="ModelViewComponent.h" />
@@ -172,6 +174,7 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameWindow.cpp" />
     <ClCompile Include="HighResolutionTimer.cpp" />
+    <ClCompile Include="MaterialComponent.cpp" />
     <ClCompile Include="MatrixStack.cpp" />
     <ClCompile Include="MeshComponent.cpp" />
     <ClCompile Include="ModelViewComponent.cpp" />
@@ -190,8 +193,11 @@
   <ItemGroup>
     <None Include="crystalShader.frag" />
     <None Include="crystalShader.vert" />
+    <None Include="resources\entities.cfg" />
     <None Include="resources\shaders\mainShader.frag" />
     <None Include="resources\shaders\mainShader.vert" />
+    <None Include="resources\shaders\mc.frag" />
+    <None Include="resources\shaders\mc.vert" />
     <None Include="resources\shaders\textShader.frag" />
     <None Include="resources\shaders\textShader.vert" />
   </ItemGroup>

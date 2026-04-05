@@ -21,9 +21,13 @@ void Renderer::Render(const FrameData& frameData)
             shader->SetUniform(base + ".Ld", frameData.lights[i].Ld);
             shader->SetUniform(base + ".Ls", frameData.lights[i].Ls);
         }
+        glm::mat4 modelView = frameData.viewMatrix * renderable.modelMatrix;
+        shader->SetUniform("matrices.modelViewMatrix", modelView);
 
-        shader->SetUniform("matrices.modelViewMatrix", frameData.viewMatrix * renderable.modelMatrix);
+        glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelView)));
+        shader->SetUniform("matrices.normalMatrix", normalMatrix);
 
+        shader->SetUniform("material.Ma", renderable.Ma);
         shader->SetUniform("material.Ma", renderable.Ma);
         shader->SetUniform("material.Md", renderable.Md);
         shader->SetUniform("material.Ms", renderable.Ms);

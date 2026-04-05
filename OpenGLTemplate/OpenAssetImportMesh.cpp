@@ -56,7 +56,12 @@ bool COpenAssetImportMesh::LoadFBX(const std::string& filename)
 {
     m_Scene = m_Importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_LimitBoneWeights);
 
-    if (!m_Scene || !m_Scene->mRootNode) return false;
+    if (!m_Scene || !m_Scene->mRootNode)
+    {
+        std::string errorMsg = "Failed to load FBX: " + filename + "\nReason: " + m_Importer.GetErrorString();
+        MessageBox(NULL, errorMsg.c_str(), "Assimp Load Error", MB_ICONHAND);
+        return false;
+    }
 
     if (m_Scene->mNumAnimations > 0)
     {
@@ -79,7 +84,7 @@ bool COpenAssetImportMesh::LoadFBX(const std::string& filename)
         }
     }
 
-    return true;
+    return InitFromScene(m_Scene, filename);
 }
 
 COpenAssetImportMesh::COpenAssetImportMesh()
@@ -122,6 +127,107 @@ bool COpenAssetImportMesh::Load(const std::string& Filename)
     return Ret;
 }
 
+glm::vec3 COpenAssetImportMesh::InterpolatePosition(float time, const aiNodeAnim* node)
+{
+    if (node->mNumPositionKeys == 1)
+    {
+        return glm::vec3(node->mPositionKeys[0].mValue.x,
+            node->mPositionKeys[0].mValue.y,
+            node->mPositionKeys[0].mValue.z);
+    }
+
+    unsigned int positionIndex = 0;
+    for (unsigned int i = 0; i < node->mNumPositionKeys - 1; i++)
+    {
+        if (time < (float)node->mPositionKeys[i + 1].mTime)
+        {
+            positionIndex = i;
+            break;
+        }
+    }
+
+    unsigned int nextPositionIndex = positionIndex + 1;
+    const aiVectorKey& before = node->mPositionKeys[positionIndex];
+    const aiVectorKey& after = node->mPositionKeys[nextPositionIndex];
+
+    float deltaTime = (float)(after.mTime - before.mTime);
+    float blendingFactor = (time - (float)before.mTime) / deltaTime;
+
+    blendingFactor = std::max(0.0f, std::min(1.0f, blendingFactor));
+
+    glm::vec3 startVec(before.mValue.x, before.mValue.y, before.mValue.z);
+    glm::vec3 endVec(after.mValue.x, after.mValue.y, after.mValue.z);
+
+    return glm::mix(startVec, endVec, blendingFactor);
+}
+
+glm::quat COpenAssetImportMesh::InterpolateRotation(float time, const aiNodeAnim* node)
+{
+    if (node->mNumRotationKeys == 1)
+    {
+        return glm::quat(node->mRotationKeys[0].mValue.w,
+            node->mRotationKeys[0].mValue.x,
+            node->mRotationKeys[0].mValue.y,
+            node->mRotationKeys[0].mValue.z);
+    }
+
+    unsigned int rotationIndex = 0;
+    for (unsigned int i = 0; i < node->mNumRotationKeys - 1; i++)
+    {
+        if (time < (float)node->mRotationKeys[i + 1].mTime)
+        {
+            rotationIndex = i;
+            break;
+        }
+    }
+
+    unsigned int nextRotationIndex = rotationIndex + 1;
+    const aiQuatKey& before = node->mRotationKeys[rotationIndex];
+    const aiQuatKey& after = node->mRotationKeys[nextRotationIndex];
+
+    float deltaTime = (float)(after.mTime - before.mTime);
+    float blendingFactor = (time - (float)before.mTime) / deltaTime;
+    blendingFactor = std::max(0.0f, std::min(1.0f, blendingFactor));
+
+    glm::quat startQuat(before.mValue.w, before.mValue.x, before.mValue.y, before.mValue.z);
+    glm::quat endQuat(after.mValue.w, after.mValue.x, after.mValue.y, after.mValue.z);
+
+    return glm::normalize(glm::slerp(startQuat, endQuat, blendingFactor));
+}
+
+glm::vec3 COpenAssetImportMesh::InterpolateScale(float time, const aiNodeAnim* node)
+{
+    if (node->mNumScalingKeys == 1)
+    {
+        return glm::vec3(node->mScalingKeys[0].mValue.x,
+            node->mScalingKeys[0].mValue.y,
+            node->mScalingKeys[0].mValue.z);
+    }
+
+    unsigned int scaleIndex = 0;
+    for (unsigned int i = 0; i < node->mNumScalingKeys - 1; i++)
+    {
+        if (time < (float)node->mScalingKeys[i + 1].mTime)
+        {
+            scaleIndex = i;
+            break;
+        }
+    }
+
+    unsigned int nextScaleIndex = scaleIndex + 1;
+    const aiVectorKey& before = node->mScalingKeys[scaleIndex];
+    const aiVectorKey& after = node->mScalingKeys[nextScaleIndex];
+
+    float deltaTime = (float)(after.mTime - before.mTime);
+    float blendingFactor = (time - (float)before.mTime) / deltaTime;
+    blendingFactor = std::max(0.0f, std::min(1.0f, blendingFactor));
+
+    glm::vec3 startVec(before.mValue.x, before.mValue.y, before.mValue.z);
+    glm::vec3 endVec(after.mValue.x, after.mValue.y, after.mValue.z);
+
+    return glm::mix(startVec, endVec, blendingFactor);
+}
+
 bool COpenAssetImportMesh::InitFromScene(const aiScene* pScene, const std::string& Filename)
 {  
     m_Entries.resize(pScene->mNumMeshes);
@@ -161,6 +267,22 @@ void COpenAssetImportMesh::InitMesh(unsigned int Index, const aiMesh* paiMesh)
         Vertices.push_back(v);
     }
 
+    for (unsigned int boneIndex = 0; boneIndex < paiMesh->mNumBones; ++boneIndex)
+    {
+        aiBone* bone = paiMesh->mBones[boneIndex];
+        std::string boneName(bone->mName.data);
+
+        int internalBoneID = m_BoneMapping[boneName];
+
+        for (unsigned int weightIndex = 0; weightIndex < bone->mNumWeights; ++weightIndex)
+        {
+            unsigned int vertexId = bone->mWeights[weightIndex].mVertexId;
+            float weight = bone->mWeights[weightIndex].mWeight;
+
+            Vertices[vertexId].AddBoneData(internalBoneID, weight);
+        }
+    }
+
     for (unsigned int i = 0 ; i < paiMesh->mNumFaces ; i++) {
         const aiFace& Face = paiMesh->mFaces[i];
         assert(Face.mNumIndices == 3);
@@ -175,7 +297,7 @@ void COpenAssetImportMesh::InitMesh(unsigned int Index, const aiMesh* paiMesh)
 bool COpenAssetImportMesh::InitMaterials(const aiScene* pScene, const std::string& Filename)
 {
     // Extract the directory part from the file name
-    std::string::size_type SlashIndex = Filename.find_last_of("\\");
+    std::string::size_type SlashIndex = Filename.find_last_of("\\/");
     std::string Dir;
 
     if (SlashIndex == std::string::npos) {
@@ -198,12 +320,18 @@ bool COpenAssetImportMesh::InitMaterials(const aiScene* pScene, const std::strin
 
         if (pMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
             aiString Path;
+            if (pMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &Path, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
 
-			if (pMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &Path, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
-                std::string FullPath = Dir + "\\" + Path.data;
+                std::string texturePath = Path.data;
+
+                std::string::size_type lastSlash = texturePath.find_last_of("\\/");
+                std::string justFilename = (lastSlash == std::string::npos) ? texturePath : texturePath.substr(lastSlash + 1);
+
+                std::string FullPath = Dir + "/" + justFilename;
+
                 m_Textures[i] = new CTexture();
                 if (!m_Textures[i]->Load(FullPath, true)) {
- 					MessageBox(NULL, FullPath.c_str(), "Error loading mesh texture", MB_ICONHAND);
+                    MessageBox(NULL, FullPath.c_str(), "Error loading mesh texture", MB_ICONHAND);
                     delete m_Textures[i];
                     m_Textures[i] = NULL;
                     Ret = false;
@@ -241,10 +369,14 @@ void COpenAssetImportMesh::Render()
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 		glEnableVertexAttribArray(2);
+        glEnableVertexAttribArray(3);
+        glEnableVertexAttribArray(4);
         glBindBuffer(GL_ARRAY_BUFFER, m_Entries[i].vbo);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)12);
         glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)20);
+        glVertexAttribIPointer(3, 4, GL_INT, sizeof(Vertex), (const GLvoid*)32);
+        glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)48);
 
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Entries[i].ibo);
@@ -261,10 +393,9 @@ void COpenAssetImportMesh::Render()
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
 		glDisableVertexAttribArray(2);
+		glDisableVertexAttribArray(3);
+		glDisableVertexAttribArray(4);
     }
-
-
-
 }
 
 void COpenAssetImportMesh::UpdateAnimation(float dt)
@@ -272,11 +403,15 @@ void COpenAssetImportMesh::UpdateAnimation(float dt)
     if (!m_Animation) return;
     m_animationTime += dt * m_animationSpeed;
 
-    float duration = m_Animation->mDuration / m_Animation->mTicksPerSecond;
-    if (m_animationTime > duration) m_animationTime = fmod(m_animationTime, duration);
+    float ticksPerSecond = (float)(m_Animation->mTicksPerSecond != 0 ? m_Animation->mTicksPerSecond : 25.0f);
+
+    float timeInTicks = m_animationTime * ticksPerSecond;
+
+    float animTime = fmod(timeInTicks, (float)m_Animation->mDuration);
 
     std::vector<glm::mat4> transforms(m_NumBones);
-    BoneTransform(m_animationTime, transforms);
+
+    BoneTransform(animTime, transforms);
 
     for (int i = 0; i < m_NumBones; ++i)
     {
@@ -291,8 +426,27 @@ void COpenAssetImportMesh::BoneTransform(float timeInSeconds, std::vector<glm::m
         {
             glm::mat4 nodeTransform = glm::transpose(glm::make_mat4(&node->mTransformation.a1));
 
-            // TODO: interpolate if node has animation
-            // For now just static transform
+            
+            if (m_Animation)
+            {
+                for (unsigned int i = 0; i < m_Animation->mNumChannels; i++)
+                {
+                    aiNodeAnim* anim = m_Animation->mChannels[i];
+                    if (anim && std::string(anim->mNodeName.C_Str()) == node->mName.C_Str())
+                    {
+                        glm::vec3 translation = InterpolatePosition(timeInSeconds, anim);
+                        glm::quat rotation = InterpolateRotation(timeInSeconds, anim);
+                        glm::vec3 scale = InterpolateScale(timeInSeconds, anim);
+
+                        glm::mat4 transMat = glm::translate(glm::mat4(1.0f), translation);
+                        glm::mat4 rotMat = glm::mat4_cast(rotation);
+                        glm::mat4 scaleMat = glm::scale(glm::mat4(1.0f), scale);
+
+                        nodeTransform = transMat * rotMat * scaleMat;
+                        break;
+                    }
+                }
+            }
 
             glm::mat4 globalTransform = parentTransform * nodeTransform;
 

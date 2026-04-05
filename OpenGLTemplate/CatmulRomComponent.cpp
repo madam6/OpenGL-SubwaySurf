@@ -29,7 +29,7 @@ void CatmullRomComponent::Init()
 void CatmullRomComponent::AddRenderData(std::vector<RenderData>& renderQueue)
 {
     // TODO: change to decoupled rendering
-    m_track.RenderTrack();
+    //m_track.RenderTrack();
 }
 
 void CatmullRomComponent::Apply(const PropertyMap& props)

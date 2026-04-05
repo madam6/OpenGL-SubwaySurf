@@ -1,10 +1,26 @@
 #include "MeshComponent.h"
-#include "OpenAssetImportMesh.h"
 #include "ModelViewComponent.h"
 #include "Entity.h"
 #include "ShaderComponent.h"
 #include "Game.h"
 #include "MaterialComponent.h"
+#include "ComponentRegistry.h"
+
+namespace
+{
+	bool registered = []()
+		{
+			ComponentRegistry::Instance().Register("MeshComponent",
+				[](Entity& e, const PropertyMap& props)
+				{
+					auto& c = e.AddComponent<MeshComponent>();
+					c.Apply(props);
+				});
+
+			return true;
+		}();
+}
+
 
 MeshComponent::MeshComponent()
 {
@@ -15,9 +31,9 @@ void MeshComponent::Init()
 {
 	if (GetOwner() != nullptr)
 	{
-		m_ModelViewComponentRef = std::make_shared<ModelViewComponent>(GetOwner()->FindComponent<ModelViewComponent>());
-		m_ShaderComponentRef = std::make_shared<ShaderComponent>(GetOwner()->FindComponent<ShaderComponent>());
-		m_MaterialComponent = std::make_shared<MaterialComponent>(GetOwner()->FindComponent<MaterialComponent>());
+		m_ModelViewComponentRef = GetOwner()->FindComponent<ModelViewComponent>();
+		m_ShaderComponentRef = GetOwner()->FindComponent<ShaderComponent>();
+		m_MaterialComponent = GetOwner()->FindComponent<MaterialComponent>();
 	}
 
 }
@@ -59,7 +75,8 @@ void MeshComponent::Apply(const PropertyMap& props)
 {
 	auto itFbx = props.find("isfbx");
 	auto itFilePath = props.find("mesh_file_path");
-	if (itFbx != props.end() && itFilePath != props.end())
+	auto itSpeed = props.find("anim_speed");
+	if (itFbx != props.end() && itFilePath != props.end() && itSpeed != props.end())
 	{
 		if (itFbx->second == "true")
 		{
@@ -71,6 +88,8 @@ void MeshComponent::Apply(const PropertyMap& props)
 			m_Mesh->Load(itFilePath->second);
 			isFBX = false;
 		}
+		m_Mesh->SetAnimationSpeed(std::stof(itSpeed->second));
+
 	}
 	else
 	{

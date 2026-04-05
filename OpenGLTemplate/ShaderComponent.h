@@ -7,9 +7,9 @@ class ShaderComponent : public Component
 
 	void AddRenderData(std::vector<RenderData>& renderQueue) override;
 
-	void Apply(const PropertyMap& props);
 	void Update(float dt) override;
 public:
+	void Apply(const PropertyMap& props);
 	std::string GetShaderName() const { return shaderName; };
 private:
 	// properties

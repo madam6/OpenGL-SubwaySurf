@@ -124,11 +124,22 @@ void Game::Initialise()
 	InitShaders();
 
 	std::vector<std::string> entityLines = ReadEntityLines("resources\\entities.cfg");
+	std::vector<std::string> currentEntityLines;
 
 	for (const auto& line : entityLines)
 	{
-		std::vector<std::string> linesForEntity = { line };
-		m_entities.push_back(EntityParser::Create(linesForEntity));
+		if (line.find("EntityName:") == 0 && !currentEntityLines.empty())
+		{
+			m_entities.push_back(EntityParser::Create(currentEntityLines));
+			currentEntityLines.clear();
+		}
+
+		currentEntityLines.push_back(line);
+	}
+
+	if (!currentEntityLines.empty())
+	{
+		m_entities.push_back(EntityParser::Create(currentEntityLines));
 	}
 
 	for (auto& entityPtr : m_entities)
@@ -208,6 +219,22 @@ void Game::Render()
 	{
 		entityPtr->AddRenderData(m_Renderer->m_RenderQueue);
 	}
+
+	FrameData frameData;
+
+	frameData.projMatrix = *m_pCamera->GetPerspectiveProjectionMatrix();
+	frameData.viewMatrix = viewMatrix;
+	frameData.cameraPosition = m_pCamera->GetPosition();
+
+	FrameData::Light light;
+	light.position = lightPosition1;
+	light.La = glm::vec3(1.0f);
+	light.Ld = glm::vec3(1.0f);
+	light.Ls = glm::vec3(1.0f);
+	frameData.lights.push_back(light);
+
+	m_Renderer->Render(frameData);
+
 	modelViewMatrixStack.Pop();
 
 	DisplayFrameRate();
@@ -226,6 +253,8 @@ void Game::InitShaders()
 	sShaderFileNames.push_back("textShader.frag");
 	sShaderFileNames.push_back("crystalShader.vert");
 	sShaderFileNames.push_back("crystalShader.frag");
+	sShaderFileNames.push_back("mc.vert");
+	sShaderFileNames.push_back("mc.frag");
 
 	for (int i = 0; i < (int)sShaderFileNames.size(); i++) {
 		std::string sExt = sShaderFileNames[i].substr((int)sShaderFileNames[i].size() - 4, 4);
@@ -263,6 +292,13 @@ void Game::InitShaders()
 	pCrystalProgram->AddShaderToProgram(&shShaders[5]);
 	pCrystalProgram->LinkProgram();
 	m_ShaderPrograms["CrystalShader"] = pCrystalProgram;
+
+	CShaderProgram* pMCProgram = new CShaderProgram;
+	pMCProgram->CreateProgram();
+	pMCProgram->AddShaderToProgram(&shShaders[6]);
+	pMCProgram->AddShaderToProgram(&shShaders[7]);
+	pMCProgram->LinkProgram();
+	m_ShaderPrograms["mc"] = pMCProgram;
 }
 
 std::vector<std::string> Game::ReadEntityLines(const std::string& filename)

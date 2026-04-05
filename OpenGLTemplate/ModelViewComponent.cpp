@@ -1,5 +1,21 @@
 #include "ModelViewComponent.h"
+#include "ComponentRegistry.h"
+#include "Entity.h"
 
+namespace
+{
+    bool registered = []()
+        {
+            ComponentRegistry::Instance().Register("ModelViewComponent",
+                [](Entity& e, const PropertyMap& props)
+                {
+                    auto& c = e.AddComponent<ModelViewComponent>();
+                    c.Apply(props);
+                });
+
+            return true;
+        }();
+}
 void ModelViewComponent::Init()
 {
 }

@@ -7,12 +7,13 @@ class MaterialComponent : public Component
 
 	void AddRenderData(std::vector<RenderData>& renderQueue) override;
 
-	void Apply(const PropertyMap& props);
+	
 	void Update(float dt) override;
 public:
 	glm::vec3 GetMa() const { return Ma; };
 	glm::vec3 GetMd() const { return Md; };
 	glm::vec3 GetMs() const { return Ms; };
+	void Apply(const PropertyMap& props);
 	float GetShiny() const { return shininess; };
 private:
 	// properties

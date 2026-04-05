@@ -1,6 +1,6 @@
 #pragma once
 #include "Component.h"
-class COpenAssetImportMesh;
+#include "OpenAssetImportMesh.h"
 class ModelViewComponent;
 class ShaderComponent;
 class MaterialComponent;
@@ -14,11 +14,12 @@ public:
 
     void Apply(const PropertyMap& props);
     void Update(float dt) override;
+    void SetAnimationSpeed(float speed) { if (m_Mesh) m_Mesh->SetAnimationSpeed(speed); }
 private:
     std::unique_ptr<COpenAssetImportMesh> m_Mesh;
-    std::shared_ptr<ModelViewComponent> m_ModelViewComponentRef;
-    std::shared_ptr<ShaderComponent> m_ShaderComponentRef;
-    std::shared_ptr<MaterialComponent> m_MaterialComponent;
+    ModelViewComponent* m_ModelViewComponentRef = nullptr;
+    ShaderComponent* m_ShaderComponentRef = nullptr;
+    MaterialComponent* m_MaterialComponent = nullptr;
     //properties
     std::string m_MeshPath;
     bool isFBX;

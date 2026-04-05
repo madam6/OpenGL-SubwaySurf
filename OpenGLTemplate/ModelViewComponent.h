@@ -6,13 +6,12 @@ class ModelViewComponent : public Component
 	void Init() override;
 
 	void AddRenderData(std::vector<RenderData>& renderQueue) override;
-
-	void Apply(const PropertyMap& props);
+	
 	void Update(float dt) override;
 public:
 	glm::vec3 GetPosition() const { return position; }
 	glm::vec3 GetScale() const { return scale; }
-
+	void Apply(const PropertyMap& props);
 private:
 	// properties
 	glm::vec3 position;

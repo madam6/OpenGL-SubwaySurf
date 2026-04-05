@@ -119,6 +119,9 @@
     <ClInclude Include="ShaderComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MaterialComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Audio.cpp">
@@ -208,6 +211,9 @@
     <ClCompile Include="ShaderComponent.cpp">
       <Filter>Source Files\ECS\Components</Filter>
     </ClCompile>
+    <ClCompile Include="MaterialComponent.cpp">
+      <Filter>Source Files\ECS\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\mainShader.frag">
@@ -226,6 +232,15 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="crystalShader.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\entities.cfg">
+      <Filter>Source Files\ECS</Filter>
+    </None>
+    <None Include="resources\shaders\mc.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\mc.vert">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

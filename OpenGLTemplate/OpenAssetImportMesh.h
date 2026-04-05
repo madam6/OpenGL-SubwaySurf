@@ -33,12 +33,15 @@
 #define INVALID_OGL_VALUE 0xFFFFFFFF
 #define SAFE_DELETE(p) if (p) { delete p; p = NULL; }
 
+#define MAX_INFLUENCE 4
 
 struct Vertex
 {
     glm::vec3 m_pos;
     glm::vec2 m_tex;
     glm::vec3 m_normal;
+    int m_boneIDs[MAX_INFLUENCE];
+    float m_weights[MAX_INFLUENCE];
 
     Vertex() {}
 
@@ -47,6 +50,29 @@ struct Vertex
         m_pos    = pos;
         m_tex    = tex;
         m_normal = normal;
+        ResetBones();
+    }
+
+    void ResetBones()
+    {
+        for (int i = 0; i < MAX_INFLUENCE; i++)
+        {
+            m_boneIDs[i] = 0;
+            m_weights[i] = 0.0f;
+        }
+    }
+
+    void AddBoneData(int boneID, float weight)
+    {
+        for (int i = 0; i < MAX_INFLUENCE; i++)
+        {
+            if (m_weights[i] == 0.0f)
+            {
+                m_boneIDs[i] = boneID;
+                m_weights[i] = weight;
+                return;
+            }
+        }
     }
 };
 
@@ -71,8 +97,13 @@ public:
 
     int GetNumBones() const { return m_NumBones; }
     const std::vector<BoneInfo>& GetBoneInfo() const { return m_BoneInfo; }
-
+    void SetAnimationSpeed(float speed) { m_animationSpeed = speed; }
+    float GetAnimationSpeed() const { return m_animationSpeed; }
 private:
+    glm::vec3 InterpolatePosition(float time, const aiNodeAnim* node);
+    glm::quat InterpolateRotation(float time, const aiNodeAnim* node);
+    glm::vec3 InterpolateScale(float time, const aiNodeAnim* node);
+
     bool InitFromScene(const aiScene* pScene, const std::string& Filename);
     void InitMesh(unsigned int Index, const aiMesh* paiMesh);
     bool InitMaterials(const aiScene* pScene, const std::string& Filename);
