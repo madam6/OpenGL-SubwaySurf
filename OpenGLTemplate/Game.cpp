@@ -38,6 +38,8 @@ Source code drawn from a number of sources and examples, including contributions
 #include "Crystal.h"
 #include "Skybox.h"
 #include "EntityParser.h"
+#include "EventSystem.h"
+#include "ColliderComponent.h"
 #include "Plane.h"
 #include "Shaders.h"
 #include "FreeTypeFont.h"
@@ -344,12 +346,49 @@ CShaderProgram* Game::GetShader(const std::string& name) const
 	return nullptr;
 }
 
-// Update method runs repeatedly with the Render method
 void Game::Update() 
 {
 	for (auto& entityPtr : m_entities)
 	{
 		entityPtr->Update(m_dt);
+	}
+
+	std::vector<ColliderComponent*> colliders;
+	for (auto& entityPtr : m_entities)
+	{
+		auto collider = entityPtr->FindComponent<ColliderComponent>();
+		if (collider)
+		{
+			colliders.push_back(collider.get());
+		}
+	}
+
+	for (size_t i = 0; i < colliders.size(); i++)
+	{
+		for (size_t j = i + 1; j < colliders.size(); j++)
+		{
+			glm::vec3 minA = colliders[i]->GetMinBounds();
+			glm::vec3 maxA = colliders[i]->GetMaxBounds();
+
+			glm::vec3 minB = colliders[j]->GetMinBounds();
+			glm::vec3 maxB = colliders[j]->GetMaxBounds();
+
+			bool collisionX = maxA.x >= minB.x && minA.x <= maxB.x;
+			bool collisionY = maxA.y >= minB.y && minA.y <= maxB.y;
+			bool collisionZ = maxA.z >= minB.z && minA.z <= maxB.z;
+
+			if (collisionX && collisionY && collisionZ)
+			{
+				CollisionPayload payload;
+				payload.entityA = colliders[i]->GetOwner();
+				payload.entityB = colliders[j]->GetOwner();
+
+				EventData data;
+				data.payload = payload;
+
+				EventSystem::Instance().BroadcastEvent("OnCollision", data);
+			}
+		}
 	}
 
 	m_pCamera->Update(m_dt);
@@ -453,7 +492,7 @@ WPARAM Game::Execute()
 LRESULT Game::ProcessEvents(HWND window,UINT message, WPARAM w_param, LPARAM l_param) 
 {
 	LRESULT result = 0;
-
+	EventData eventData;
 	switch (message) {
 
 
@@ -486,6 +525,8 @@ LRESULT Game::ProcessEvents(HWND window,UINT message, WPARAM w_param, LPARAM l_p
 		break;
 
 	case WM_KEYDOWN:
+		eventData.payload = static_cast<int>(w_param);
+		EventSystem::Instance().BroadcastEvent("KeyDown", eventData);
 		switch(w_param) {
 		case VK_ESCAPE:
 			PostQuitMessage(0);

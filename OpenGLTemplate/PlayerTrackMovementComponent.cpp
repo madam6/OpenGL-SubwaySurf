@@ -33,6 +33,8 @@ void PlayerTrackMovementComponent::Init()
         m_CatmullRomComponentRef = track->FindComponent<CatmullRomComponent>();
         assert(m_CatmullRomComponentRef);
     }
+
+    EventSystem::Instance().Subscribe("KeyDown", this);
 }
 
 void PlayerTrackMovementComponent::AddRenderData(std::vector<RenderData>& renderQueue)
@@ -53,6 +55,14 @@ void PlayerTrackMovementComponent::Update(float dt)
     glm::vec3 right = glm::normalize(glm::cross(forward, up));
     glm::vec3 realUp = glm::normalize(glm::cross(right, forward));
 
+    float targetOffset = m_TargetLane * m_LaneWidth;
+    float dtSeconds = dt / 1000.0f;
+    float lerpFactor = 10.0f * dtSeconds;
+    lerpFactor = std::min(lerpFactor, 1.0f);
+    m_CurrentLaneOffset += (targetOffset - m_CurrentLaneOffset) * lerpFactor;
+
+    glm::vec3 finalPos = p + (right * m_CurrentLaneOffset) + (realUp * m_HeightFactor);
+
     glm::mat4 orientation = glm::mat4(
         glm::vec4(right, 0.0f),
         glm::vec4(realUp, 0.0f),
@@ -60,12 +70,33 @@ void PlayerTrackMovementComponent::Update(float dt)
         glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
     );
 
-    m_ModelViewComponentRef->SetPosition(p);
+    m_ModelViewComponentRef->SetPosition(finalPos);
     m_ModelViewComponentRef->SetOrientation(orientation);
+}
+
+void PlayerTrackMovementComponent::OnEvent(const std::string& eventName, const EventData& data)
+{
+    if (eventName == "KeyDown")
+    {
+        int key = std::any_cast<int>(data.payload);
+
+        if (key == 'A' || key == VK_LEFT) 
+        {
+            m_TargetLane = std::max(-1, m_TargetLane - 1);
+        }
+
+        else if (key == 'D' || key == VK_RIGHT) 
+        {
+            m_TargetLane = std::min(1, m_TargetLane + 1);
+        }
+    }
 }
 
 void PlayerTrackMovementComponent::Apply(const PropertyMap& props)
 {
     auto speedIt = props.find("speed");
     if (speedIt != props.end()) m_Speed = std::stof(speedIt->second);
+
+    auto heightIt = props.find("height_factor");
+    if (heightIt != props.end()) m_HeightFactor = std::stof(heightIt->second);
 }

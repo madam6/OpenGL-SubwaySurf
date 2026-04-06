@@ -74,8 +74,6 @@ void CCamera::Update(double dt)
 // Update the camera to respond to key presses for translation
 void CCamera::TranslateByKeyboard(double dt)
 {
-	if (m_CurrentMode == mode::follow) return;
-
 	if (GetKeyState(VK_UP) & 0x80 || GetKeyState('W') & 0x80) {
 		Advance(1.0*dt);
 	}
@@ -122,6 +120,9 @@ void CCamera::TranslateByKeyboard(double dt)
 
 		if (m_CurrentMode == mode::pathBuilding) {
 			DEBUG_MSG("Switched to PathBuilder Mode!");
+		}
+		else if (m_CurrentMode == mode::follow) {
+			DEBUG_MSG("Switched to Follow Mode!");
 		}
 		else {
 			DEBUG_MSG("Switched to FreeCam Mode!");
