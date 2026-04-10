@@ -9,5 +9,5 @@ public:
 	FollowCam();
 	camData GetData(double dt, const camData& currentData) override;
 private:
-	std::shared_ptr<Entity> m_TargetEntity;
+	std::weak_ptr<Entity> m_TargetEntity;
 };

@@ -1,6 +1,7 @@
 #include "CatmulRomComponent.h"
 #include "ComponentRegistry.h"
 #include "Entity.h"
+#include "MaterialComponent.h"
 
 namespace
 {
@@ -19,6 +20,10 @@ namespace
 
 void CatmullRomComponent::Init()
 {
+    if (auto owner = GetOwner())
+    {
+        m_MaterialComponent = owner->FindComponent<MaterialComponent>();
+    }
     m_track = std::make_shared<CCatmullRom>();
     m_track->SetTrackFile(m_file);
     m_track->CreateCentreline();
@@ -32,6 +37,17 @@ void CatmullRomComponent::AddRenderData(std::vector<RenderData>& renderQueue)
 {
     RenderData data;
     data.mesh = m_track;
+    data.shader = Game::GetInstance().GetShader("MainShader");
+    data.modelMatrix = glm::mat4(1.0f);
+    data.useTexture = true;
+
+    if (m_MaterialComponent)
+    {
+        data.Ma = m_MaterialComponent->GetMa();
+        data.Md = m_MaterialComponent->GetMd();
+        data.Ms = m_MaterialComponent->GetMs();
+        data.shininess = m_MaterialComponent->GetShiny();
+    }
 
     renderQueue.push_back(std::move(data));
 }

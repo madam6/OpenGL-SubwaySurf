@@ -35,7 +35,10 @@ struct RenderData
 	GLuint diffuseTexture = 0;
 	GLuint cubeMapTexture = 0;
 	bool useTexture = false;
+	bool isInstanced = false;
 	bool useCubeMap = false;
+
+	std::vector<glm::mat4> instanceMatrices;
 
 	CShaderProgram* shader = nullptr;
 
@@ -47,6 +50,7 @@ struct FrameData
 	glm::mat4 viewMatrix;
 	glm::mat4 projMatrix;
 	glm::vec3 cameraPosition;
+	float time;
 
 	struct Light
 	{
@@ -106,6 +110,7 @@ public:
 	static Game& GetInstance();
 	LRESULT ProcessEvents(HWND window,UINT message, WPARAM w_param, LPARAM l_param);
 	std::shared_ptr<Entity> FetchEntityByName(const std::string& name);
+	std::shared_ptr<Entity> SpawnEntityFromTemplate(const std::string& templateName);
 	void SetHinstance(HINSTANCE hinstance);
 	WPARAM Execute();
 	CShaderProgram* GetShader(const std::string& name) const;
@@ -116,8 +121,9 @@ private:
 	GameWindow m_gameWindow;
 	HINSTANCE m_hInstance;
 	std::unordered_map<std::string, CShaderProgram*> m_ShaderPrograms;
+	std::unordered_map<std::string, std::vector<std::string>> m_EntityTemplates;
 	int m_frameCount;
 	double m_elapsedTime;
-
+	friend class CurrencyManagerComponent;
 
 };

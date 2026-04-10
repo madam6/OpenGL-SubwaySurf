@@ -10,14 +10,14 @@ camData FollowCam::GetData(double dt, const camData& currentData)
 {
 	camData newData = currentData;
 
-	if (!m_TargetEntity)
+	if (m_TargetEntity.expired())
 	{
 		m_TargetEntity = Game::GetInstance().FetchEntityByName("MC");
 	}
 
-	if (m_TargetEntity)
+	if (auto target = m_TargetEntity.lock())
 	{
-		auto mvComp = m_TargetEntity->FindComponent<ModelViewComponent>();
+		auto mvComp = target->FindComponent<ModelViewComponent>();
 		if (mvComp)
 		{
 			glm::vec3 targetPos = mvComp->GetPosition();
@@ -31,9 +31,7 @@ camData FollowCam::GetData(double dt, const camData& currentData)
 			float followHeight = 15.0f;
 
 			newData.position = targetPos - (forward * followDistance) + (up * followHeight);
-
 			newData.viewpoint = targetPos + (forward * 10.0f);
-
 			newData.upVector = up;
 		}
 	}

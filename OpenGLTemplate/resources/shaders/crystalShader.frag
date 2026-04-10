@@ -3,17 +3,19 @@
 in vec3 vColour;
 in vec2 vTexCoord;
 
-out vec4 vOutputColour;	
-
+out vec4 vOutputColour;    
+#include "light.glsl"
 uniform sampler2D sampler0;
 uniform bool bUseTexture;
 
-void main()
-{
-	vec4 vTexColour = texture(sampler0, vTexCoord);
-
-	if (bUseTexture)
-		vOutputColour = vTexColour * vec4(vColour, 1.0f);
-	else
-		vOutputColour = vec4(vColour, 1.0f);
+void main() {
+    if (bUseTexture) 
+    {
+        vec4 vTexColour = texture(sampler0, vTexCoord);
+        vOutputColour = vTexColour * vec4(vColour, 1.0); 
+    }
+    else
+    {
+        vOutputColour = vec4(vColour, 1.0);
+    }
 }

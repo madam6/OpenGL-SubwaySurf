@@ -8,36 +8,36 @@ out vec4 vOutputColour;
 
 uniform sampler2D sampler0;
 
-uniform struct Material {
-    vec3 Ma;
-    vec3 Md;
-    vec3 Ms;
-    float shininess;
-} material;
-
-uniform struct Light {
-    vec4 position;
-    vec3 La, Ld, Ls;
-} lights[1];
+#include "light.glsl"
 
 void main()
 {
     vec4 texColour = texture(sampler0, vTexCoord);
 
     vec3 n = normalize(vNormal);
-    vec3 s = normalize(vec3(lights[0].position) - vPosition);
     vec3 v = normalize(-vPosition);
-    vec3 h = normalize(s + v);
+    
+    vec3 ambientTotal = vec3(0.0);
+    vec3 diffuseTotal = vec3(0.0);
+    vec3 specularTotal = vec3(0.0);
 
-    float sDotN = max(dot(s, n), 0.0);
-    vec3 ambient = lights[0].La * material.Ma;
-    vec3 diffuse = lights[0].Ld * material.Md * sDotN;
-    vec3 specular = vec3(0.0);
+    float eps = 0.000001;
 
-    if (sDotN > 0.0) 
+    for (int i = 0; i < numLights; i++)
     {
-        specular = lights[0].Ls * material.Ms * pow(max(dot(h, n), 0.0), material.shininess);
+        vec3 s = normalize(vec3(lights[i].position) - vPosition);
+        vec3 r = reflect(-s, n);
+
+        float sDotN = max(dot(s, n), 0.0);
+
+        ambientTotal += lights[i].La * material1.Ma;
+        diffuseTotal += lights[i].Ld * material1.Md * sDotN;
+
+        if (sDotN > 0.0) 
+        {
+            specularTotal += lights[i].Ls * material1.Ms * pow(max(dot(r, v), 0.0), material1.shininess + eps);
+        }
     }
 
-    vOutputColour = texColour * vec4(ambient + diffuse + specular, 1.0);
+    vOutputColour = texColour * vec4(ambientTotal + diffuseTotal + specularTotal, 1.0);
 }

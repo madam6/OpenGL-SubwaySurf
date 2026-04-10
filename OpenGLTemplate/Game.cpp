@@ -127,26 +127,32 @@ void Game::Initialise()
 
 	std::vector<std::string> entityLines = ReadEntityLines("resources\\entities.cfg");
 	std::vector<std::string> currentEntityLines;
+	std::string currentEntityName = "";
 
 	for (const auto& line : entityLines)
 	{
-		if (line.find("EntityName:") == 0 && !currentEntityLines.empty())
+		if (line.find("EntityName:") == 0)
 		{
-			m_entities.push_back(EntityParser::Create(currentEntityLines));
-			currentEntityLines.clear();
+			if (!currentEntityLines.empty())
+			{
+				m_EntityTemplates[currentEntityName] = currentEntityLines;
+				m_entities.push_back(EntityParser::Create(currentEntityLines));
+				currentEntityLines.clear();
+			}
+			currentEntityName = line.substr(11);
 		}
-
 		currentEntityLines.push_back(line);
 	}
 
 	if (!currentEntityLines.empty())
 	{
+		m_EntityTemplates[currentEntityName] = currentEntityLines;
 		m_entities.push_back(EntityParser::Create(currentEntityLines));
 	}
 
-	for (auto& entityPtr : m_entities)
+	for (size_t i = 0; i < m_entities.size(); i++)
 	{
-		entityPtr->Init();
+		m_entities[i]->Init();
 	}
 }
 
@@ -162,7 +168,6 @@ void Game::Render()
 	pMainProgram->UseProgram();
 	pMainProgram->SetUniform("bUseTexture", true);
 	pMainProgram->SetUniform("sampler0", 0);
-
 
 	int cubeMapTextureUnit = 10;
 	pMainProgram->SetUniform("CubeMapTex", cubeMapTextureUnit);
@@ -234,6 +239,10 @@ void Game::Render()
 	light.Ld = glm::vec3(1.0f);
 	light.Ls = glm::vec3(1.0f);
 	frameData.lights.push_back(light);
+
+	static float s_totalTime = 0.0f;
+	s_totalTime += (float)(m_dt / 1000.0);
+	frameData.time = s_totalTime;
 
 	m_Renderer->Render(frameData);
 
@@ -348,16 +357,16 @@ CShaderProgram* Game::GetShader(const std::string& name) const
 
 void Game::Update() 
 {
-	for (auto& entityPtr : m_entities)
+	for (size_t i = 0; i < m_entities.size(); i++)
 	{
-		entityPtr->Update(m_dt);
+		m_entities[i]->Update(m_dt);
 	}
 
 	std::vector<ColliderComponent*> colliders;
-	for (auto& entityPtr : m_entities)
+	for (size_t i = 0; i < m_entities.size(); i++)
 	{
-		auto collider = entityPtr->FindComponent<ColliderComponent>();
-		if (collider)
+		auto collider = m_entities[i]->FindComponent<ColliderComponent>();
+		if (collider && collider->IsActive())
 		{
 			colliders.push_back(collider.get());
 		}
@@ -430,6 +439,18 @@ void Game::DisplayFrameRate()
 	}
 }
 
+std::shared_ptr<Entity> Game::SpawnEntityFromTemplate(const std::string& templateName)
+{
+	auto it = m_EntityTemplates.find(templateName);
+	if (it != m_EntityTemplates.end())
+	{
+		auto newEntity = EntityParser::Create(it->second);
+		m_entities.push_back(newEntity);
+		return newEntity;
+	}
+	return nullptr;
+}
+
 // The game loop runs repeatedly until game over
 void Game::GameLoop()
 {
@@ -483,6 +504,8 @@ WPARAM Game::Execute()
 		} 
 		else Sleep(200); // Do not consume processor power if application isn't active
 	}
+	m_entities.clear();
+	m_EntityTemplates.clear();
 
 	m_gameWindow.Deinit();
 

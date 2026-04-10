@@ -38,6 +38,7 @@ public:
 		return nullptr;
 	}
 	std::string GetName() const { return m_Name; };
+	void SetName(const std::string& name) { m_Name = name; };
 	friend class EntityParser;
 private:
 	std::vector<std::shared_ptr<Component>> m_Components;

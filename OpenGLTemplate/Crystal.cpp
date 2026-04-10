@@ -40,6 +40,10 @@ void CCrystal::Create(std::string a_sDirectory, std::string a_sFilename)
 
 	m_vbo.UploadDataToGPU(GL_STATIC_DRAW);
 
+	GLint size = 0;
+	glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
+	DEBUG_MSG("VBO size: %d bytes\n", size);
+
 	// Layout:
 	// |position1;normal1;textureCoord1;color1|position2;normal2;textureCoord2;color2...position72;normal72;textureCoord72;color72|
 	
@@ -47,19 +51,47 @@ void CCrystal::Create(std::string a_sDirectory, std::string a_sFilename)
 	GLsizei stride = sizeof(vertex);
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, position));
 
 	// Normals have 3 elements, Second attribute pointer starts directly after position
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*) sizeof(glm::vec3));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, normal));
 
 	// Texture coords have 2 elements, third attribute pointer starts after position + normal
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, (void*) (2 * sizeof(glm::vec3)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, textureCoord));
 
 	// Color has 3 elements, forth attribute pointer starts after position + normal + textureCoord (which is sizeof(vec2) instead of vec3)
 	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, stride, (void*) (2 * sizeof(glm::vec3) + sizeof(glm::vec2)));
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, color));
+	glBindVertexArray(m_vao);
+	glGenBuffers(1, &m_instanceVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_instanceVBO);
+
+	glBufferData(GL_ARRAY_BUFFER, 500 * sizeof(glm::mat4), NULL, GL_DYNAMIC_DRAW);
+
+	for (int i = 0; i < 4; i++) {
+		glEnableVertexAttribArray(4 + i);
+		glVertexAttribPointer(4 + i, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4) * i));
+		glVertexAttribDivisor(4 + i, 1);
+	}
+
+	glBindVertexArray(0);
+}
+
+void CCrystal::RenderInstanced(const std::vector<glm::mat4>& instanceMatrices)
+{
+	if (instanceMatrices.empty()) return;
+
+	glBindVertexArray(m_vao);
+	m_texture.Bind();
+
+	glBindBuffer(GL_ARRAY_BUFFER, m_instanceVBO);
+
+	glBufferSubData(GL_ARRAY_BUFFER, 0, instanceMatrices.size() * sizeof(glm::mat4), instanceMatrices.data());
+
+	glDrawArraysInstanced(GL_TRIANGLES, 0, (GLsizei)m_crystalVertices.size(), (GLsizei)instanceMatrices.size());
+	glBindVertexArray(0);
 }
 
 void CCrystal::Render()

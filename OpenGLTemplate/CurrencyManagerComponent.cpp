@@ -1,0 +1,206 @@
+#include "CurrencyManagerComponent.h"
+#include "Entity.h"
+#include "Game.h"
+#include "CatmulRomComponent.h"
+#include "PlayerTrackMovementComponent.h"
+#include "ComponentRegistry.h"
+#include "Crystal.h"
+#include "Camera.h"
+std::shared_ptr<CCrystal> CurrencyManagerComponent::s_SharedCrystal = nullptr;
+
+namespace
+{
+    bool registered = []()
+        {
+            ComponentRegistry::Instance().Register("CurrencyManagerComponent",
+                [](Entity& e, const PropertyMap& props)
+                {
+                    auto& c = e.AddComponent<CurrencyManagerComponent>();
+                    c.Apply(props);
+                });
+
+            return true;
+        }();
+}
+
+void CurrencyManagerComponent::Init()
+{
+    if (auto owner = GetOwner()) m_PlayerRef = owner->FindComponent<PlayerTrackMovementComponent>();
+
+    if (auto trackEntity = Game::GetInstance().FetchEntityByName("CatmullRomTrack")) 
+    {
+        m_TrackRef = trackEntity->FindComponent<CatmullRomComponent>()->m_track;
+    }
+
+    if (auto templateCrystal = Game::GetInstance().FetchEntityByName(m_CurrencyBaseName))
+    {
+        m_Crystals.push_back(templateCrystal->FindComponent<CollectibleComponent>());
+    }
+
+    int maxPoolSize = m_MaxBatches * m_MaxPerBatch;
+
+    for (int i = 1; i < maxPoolSize; i++)
+    {
+        auto newCrystal = Game::GetInstance().SpawnEntityFromTemplate(m_CurrencyBaseName);
+        if (newCrystal)
+        {
+            newCrystal->SetName(m_CurrencyBaseName + "_" + std::to_string(i));
+            newCrystal->Init();
+            m_Crystals.push_back(newCrystal->FindComponent<CollectibleComponent>());
+        }
+    }
+
+    if (!s_SharedCrystal) 
+    {
+        s_SharedCrystal = std::make_shared<CCrystal>();
+        s_SharedCrystal->Create("resources\\textures\\", "crystalTexture.jpg");
+    }
+
+    EventSystem::Instance().Subscribe("OnCollision", this);
+    RespawnAll();
+}
+
+void CurrencyManagerComponent::Update(float dt)
+{
+}
+
+void CurrencyManagerComponent::AddRenderData(std::vector<RenderData>& renderQueue)
+{
+    if (m_Crystals.empty() || !s_SharedCrystal) return;
+
+    std::vector<glm::mat4> activeMatrices;
+    for (auto& crystal : m_Crystals)
+    {
+        if (crystal && !crystal->IsCollected())
+        {
+            auto mv = crystal->GetOwner()->FindComponent<ModelViewComponent>();
+            if (mv) 
+            {
+                glm::mat4 model = glm::translate(glm::mat4(1.0f), mv->GetPosition());
+                model *= mv->GetOrientation();
+                model = glm::scale(model, mv->GetScale());
+                activeMatrices.push_back(model);
+            }
+        }
+    }
+
+    if (activeMatrices.empty()) return;
+
+    RenderData batch;
+    batch.mesh = s_SharedCrystal;
+    batch.shader = Game::GetInstance().GetShader("CrystalShader");
+    batch.isInstanced = true;
+    batch.instanceMatrices = activeMatrices;
+    batch.useTexture = true;
+
+    renderQueue.push_back(batch);
+}
+
+void CurrencyManagerComponent::RespawnAll()
+{
+    for (auto& crystal : m_Crystals)
+    {
+        crystal->Collect();
+    }
+
+    int numBatches = m_MinBatches + (rand() % (m_MaxBatches - m_MinBatches + 1));
+    int crystalIndex = 0;
+    float currentBatchDist = m_PlayerRef->GetCurrentDistance() + 50.0f + (rand() % 50);
+
+    for (int b = 0; b < numBatches; b++)
+    {
+        int crystalsInThisBatch = m_MinPerBatch + (rand() % (m_MaxPerBatch - m_MinPerBatch + 1));
+
+        int currentLane = (rand() % 3) - 1;
+
+        for (int i = 0; i < crystalsInThisBatch; i++)
+        {
+            if (crystalIndex >= m_Crystals.size()) break;
+
+            float dist = currentBatchDist + (i * m_SpacingInBatch);
+
+            glm::vec3 p, up, forwardVec;
+            m_TrackRef->Sample(dist, p, up);
+            m_TrackRef->Sample(dist + 1.0f, forwardVec);
+
+            glm::vec3 forward = glm::normalize(forwardVec - p);
+            glm::vec3 safeUp = up;
+
+            if (glm::length(safeUp) < 0.001f) safeUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+            glm::vec3 right = glm::cross(forward, safeUp);
+
+            if (glm::length(right) < 0.001f)
+            {
+                right = glm::cross(forward, glm::vec3(1.0f, 0.0f, 0.0f));
+                if (glm::length(right) < 0.001f) right = glm::cross(forward, glm::vec3(0.0f, 0.0f, 1.0f));
+            }
+            right = glm::normalize(right);
+            glm::vec3 realUp = glm::normalize(glm::cross(right, forward));
+
+            glm::vec3 finalPos = p + (right * (currentLane * 10.0f)) + (realUp * 5.0f);
+
+            glm::mat4 orientation = glm::mat4(
+                glm::vec4(right, 0.0f), glm::vec4(realUp, 0.0f),
+                glm::vec4(forward, 0.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
+            );
+
+            m_Crystals[crystalIndex]->SpawnAt(finalPos, orientation);
+            crystalIndex++;
+        }
+
+        currentBatchDist += (crystalsInThisBatch * m_SpacingInBatch) + 30.0f + (rand() % 51);
+    }
+}
+
+void CurrencyManagerComponent::OnEvent(const std::string& eventName, const EventData& data) 
+{
+    if (eventName == "OnCollision") 
+    {
+        CollisionPayload payload = std::any_cast<CollisionPayload>(data.payload);
+
+        Entity* hitCrystal = nullptr;
+        if (payload.entityA->GetName() == "MC" 
+            && payload.entityB->GetName().find(m_CurrencyBaseName) != std::string::npos)
+        {
+            hitCrystal = payload.entityB;
+        }
+        else if (payload.entityB->GetName() == "MC"
+            && payload.entityA->GetName().find(m_CurrencyBaseName) != std::string::npos)
+        {
+            hitCrystal = payload.entityA;
+        }
+
+        if (hitCrystal) 
+        {
+            auto collectible = hitCrystal->FindComponent<CollectibleComponent>();
+            if (collectible && !collectible->IsCollected())
+            {
+                collectible->Collect();
+                m_Score += 1;
+                DEBUG_MSG("Collected! Score: %d", m_Score);
+            }
+        }
+    }
+}
+
+void CurrencyManagerComponent::Apply(const PropertyMap& props)
+{
+    auto it = props.find("base_currency");
+    if (it != props.end()) m_CurrencyBaseName = it->second;
+
+    it = props.find("min_batches");
+    if (it != props.end()) m_MinBatches = std::stoi(it->second);
+
+    it = props.find("max_batches");
+    if (it != props.end()) m_MaxBatches = std::stoi(it->second);
+
+    it = props.find("min_per_batch");
+    if (it != props.end()) m_MinPerBatch = std::stoi(it->second);
+
+    it = props.find("max_per_batch");
+    if (it != props.end()) m_MaxPerBatch = std::stoi(it->second);
+
+    it = props.find("spacing_in_batch");
+    if (it != props.end()) m_SpacingInBatch = std::stoi(it->second);
+}

@@ -137,6 +137,15 @@
     <ClInclude Include="ColliderComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CrystalMeshComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CollectibleComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CurrencyManagerComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Audio.cpp">
@@ -244,6 +253,15 @@
     <ClCompile Include="ColliderComponent.cpp">
       <Filter>Source Files\ECS\Components</Filter>
     </ClCompile>
+    <ClCompile Include="CrystalMeshComponent.cpp">
+      <Filter>Source Files\ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="CollectibleComponent.cpp">
+      <Filter>Source Files\ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="CurrencyManagerComponent.cpp">
+      <Filter>Source Files\ECS\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\mainShader.frag">
@@ -271,6 +289,15 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="resources\shaders\mc.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\crystalShader.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\crystalShader.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\light.glsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

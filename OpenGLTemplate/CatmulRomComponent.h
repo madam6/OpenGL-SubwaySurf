@@ -3,6 +3,7 @@
 #include "CatmullRom.h"
 
 class PlayerTrackComponent;
+class MaterialComponent;
 class CatmullRomComponent : public Component
 {
 public:
@@ -15,6 +16,7 @@ public:
     void Update(float dt) override;
 private:
     std::shared_ptr<CCatmullRom> m_track;
+    std::shared_ptr<MaterialComponent> m_MaterialComponent = nullptr;
     float m_distance;
     float m_speed{ 1.f };
     float m_distanceFactor;
@@ -23,4 +25,5 @@ private:
     std::string m_file;
 
     friend class PlayerTrackMovementComponent;
+    friend class CurrencyManagerComponent;
 };

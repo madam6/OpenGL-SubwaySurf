@@ -18,7 +18,7 @@ public:
 	glm::mat4 GetOrientation() const { return orientation; }
 private:
 	// properties
-	glm::vec3 position;
-	glm::vec3 scale;
+	glm::vec3 position{ 0.0f };
+	glm::vec3 scale{ 1.0f, 1.0f, 1.0f };
 	glm::mat4 orientation{ 1.0f };
 };

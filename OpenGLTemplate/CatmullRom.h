@@ -21,6 +21,7 @@ public:
 
 	void CreateTrack();
 	void CreateTrack(std::string a_sDirectory, std::string a_sFilename);
+	float GetTotalDistance() const { return m_distances.back(); }
 	void Render() override;
 
 	int CurrentLap(float d); // Return the currvent lap (starting from 0) based on distance along the control curve.

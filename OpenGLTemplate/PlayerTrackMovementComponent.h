@@ -13,8 +13,10 @@ class PlayerTrackMovementComponent : public Component, public IObserver
 	void Update(float dt) override;
 
 	void OnEvent(const std::string& eventName, const EventData& data) override;
+
 public:
 	void Apply(const PropertyMap& props);
+	float GetCurrentDistance() const { return m_CurrentDistance; }
 	~PlayerTrackMovementComponent()
 	{
 		EventSystem::Instance().Unsubscribe("KeyDown", this);
