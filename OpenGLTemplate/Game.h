@@ -39,6 +39,7 @@ struct RenderData
 	bool useCubeMap = false;
 
 	std::vector<glm::mat4> instanceMatrices;
+	bool isOutline = false;
 
 	CShaderProgram* shader = nullptr;
 

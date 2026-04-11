@@ -306,5 +306,17 @@
     <None Include="resources\shaders\light.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="resources\shaders\toonShader.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\toonShader.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\outlineShader.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\outlineShader.vert">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

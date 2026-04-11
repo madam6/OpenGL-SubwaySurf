@@ -4,8 +4,10 @@
 #include "CatmulRomComponent.h"
 #include "PlayerTrackMovementComponent.h"
 #include "ComponentRegistry.h"
+#include "MaterialComponent.h"
 #include "Crystal.h"
 #include "Camera.h"
+
 std::shared_ptr<CCrystal> CurrencyManagerComponent::s_SharedCrystal = nullptr;
 std::shared_ptr<CHeart> CurrencyManagerComponent::s_SharedHeart = nullptr;
 
@@ -108,11 +110,15 @@ void CurrencyManagerComponent::AddRenderData(std::vector<RenderData>& renderQueu
     if (!m_Hearts.empty() && s_SharedHeart)
     {
         std::vector<glm::mat4> activeHeartMatrices;
+
+        glm::vec3 matAm(1), matDi(1), matSp(0); float matSh = 1;
+
         for (auto& heart : m_Hearts)
         {
             if (heart && !heart->IsCollected())
             {
-                auto mv = heart->GetOwner()->FindComponent<ModelViewComponent>();
+                auto owner = heart->GetOwner();
+                auto mv = owner->FindComponent<ModelViewComponent>();
                 if (mv)
                 {
                     glm::mat4 model = glm::translate(glm::mat4(1.0f), mv->GetPosition());
@@ -120,25 +126,45 @@ void CurrencyManagerComponent::AddRenderData(std::vector<RenderData>& renderQueu
                     model = glm::scale(model, mv->GetScale());
                     activeHeartMatrices.push_back(model);
                 }
+
+                auto mat = owner->FindComponent<MaterialComponent>();
+                if (mat)
+                {
+                    matAm = mat->GetMa(); matDi = mat->GetMd();
+                    matSp = mat->GetMs(); matSh = mat->GetShiny();
+                }
             }
         }
 
         if (!activeHeartMatrices.empty())
         {
+            RenderData outlineBatch;
+            outlineBatch.mesh = s_SharedHeart;
+            outlineBatch.shader = Game::GetInstance().GetShader("outlineShader");
+            outlineBatch.isInstanced = true;
+            outlineBatch.instanceMatrices = activeHeartMatrices;
+            outlineBatch.isOutline = true;
+            renderQueue.push_back(outlineBatch);
+
             RenderData hBatch;
             hBatch.mesh = s_SharedHeart;
-            hBatch.shader = Game::GetInstance().GetShader("CrystalShader");
+            // TODO: Get shader from components?
+            hBatch.shader = Game::GetInstance().GetShader("toonShader");
             hBatch.isInstanced = true;
             hBatch.instanceMatrices = activeHeartMatrices;
-            hBatch.useTexture = true;
+            hBatch.useTexture = false;
+            hBatch.Ma = matAm;
+            hBatch.Md = matDi;
+            hBatch.Ms = matSp;
+            hBatch.shininess = matSh;
             renderQueue.push_back(hBatch);
         }
     }
-
     if (activeMatrices.empty()) return;
 
     RenderData batch;
     batch.mesh = s_SharedCrystal;
+    // TODO: Get shader from components?
     batch.shader = Game::GetInstance().GetShader("CrystalShader");
     batch.isInstanced = true;
     batch.instanceMatrices = activeMatrices;

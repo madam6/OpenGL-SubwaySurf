@@ -46,6 +46,21 @@ void Renderer::Render(const FrameData& frameData)
             shader->SetUniform("material1.Ms", renderable.Ms);
             shader->SetUniform("material1.shininess", renderable.shininess);
 
+            shader->SetUniform("material1.shininess", renderable.shininess);
+
+            if (renderable.isOutline)
+            {
+                glEnable(GL_CULL_FACE);
+                glCullFace(GL_FRONT);
+
+                glFrontFace(GL_CW);
+            }
+            else
+            {
+                glDisable(GL_CULL_FACE);
+                glFrontFace(GL_CCW);
+            }
+
             if (renderable.isInstanced)
             {
                 shader->SetUniform("matrices.projMatrix", frameData.projMatrix);

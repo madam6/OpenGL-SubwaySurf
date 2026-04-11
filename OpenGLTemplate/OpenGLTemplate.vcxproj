@@ -219,8 +219,12 @@
     <None Include="resources\shaders\mainShader.vert" />
     <None Include="resources\shaders\mc.frag" />
     <None Include="resources\shaders\mc.vert" />
+    <None Include="resources\shaders\outlineShader.frag" />
+    <None Include="resources\shaders\outlineShader.vert" />
     <None Include="resources\shaders\textShader.frag" />
     <None Include="resources\shaders\textShader.vert" />
+    <None Include="resources\shaders\toonShader.frag" />
+    <None Include="resources\shaders\toonShader.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

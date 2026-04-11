@@ -239,7 +239,7 @@ void Game::Render()
 
 	FrameData::Light light;
 	light.position = lightPosition1;
-	light.La = glm::vec3(1.0f);
+	light.La = glm::vec3(1.f);
 	light.Ld = glm::vec3(1.0f);
 	light.Ls = glm::vec3(1.0f);
 	frameData.lights.push_back(light);
@@ -271,6 +271,10 @@ void Game::InitShaders()
 	sShaderFileNames.push_back("crystalShader.frag");
 	sShaderFileNames.push_back("mc.vert");
 	sShaderFileNames.push_back("mc.frag");
+	sShaderFileNames.push_back("toonShader.vert");
+	sShaderFileNames.push_back("toonShader.frag");
+	sShaderFileNames.push_back("outlineShader.vert");
+	sShaderFileNames.push_back("outlineShader.frag");
 
 	for (int i = 0; i < (int)sShaderFileNames.size(); i++) {
 		std::string sExt = sShaderFileNames[i].substr((int)sShaderFileNames[i].size() - 4, 4);
@@ -315,6 +319,20 @@ void Game::InitShaders()
 	pMCProgram->AddShaderToProgram(&shShaders[7]);
 	pMCProgram->LinkProgram();
 	m_ShaderPrograms["mc"] = pMCProgram;
+
+	CShaderProgram* pToonProgram = new CShaderProgram;
+	pToonProgram->CreateProgram();
+	pToonProgram->AddShaderToProgram(&shShaders[8]);
+	pToonProgram->AddShaderToProgram(&shShaders[9]);
+	pToonProgram->LinkProgram();
+	m_ShaderPrograms["toonShader"] = pToonProgram;
+
+	CShaderProgram* pOutlineProgram = new CShaderProgram;
+	pOutlineProgram->CreateProgram();
+	pOutlineProgram->AddShaderToProgram(&shShaders[10]);
+	pOutlineProgram->AddShaderToProgram(&shShaders[11]);
+	pOutlineProgram->LinkProgram();
+	m_ShaderPrograms["outlineShader"] = pOutlineProgram;
 }
 
 std::shared_ptr<Entity> Game::FetchEntityByName(const std::string& name)
