@@ -17,6 +17,7 @@ public:
     ~CurrencyManagerComponent() { EventSystem::Instance().Unsubscribe("OnCollision", this); }
     void AddRenderData(std::vector<RenderData>& renderQueue) override;
     int GetScore() const { return m_Score; }
+    int GetHealth() const { return m_Health; }
 private:
     void RespawnAll();
 

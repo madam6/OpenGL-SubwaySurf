@@ -84,6 +84,7 @@ private:
 	CSkybox *m_pSkybox;
 	CCamera *m_pCamera;
 	CPlane *m_pPlanarTerrain;
+	CPlane* m_pHeartIcon;
 	CFreeTypeFont *m_pFtFont;
 	COpenAssetImportMesh *m_pBarrelMesh;
 	COpenAssetImportMesh *m_pHorseMesh;

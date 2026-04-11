@@ -84,6 +84,7 @@ Game::~Game()
 	delete m_pHorseMesh;
 	delete m_pSphere;
 	delete m_pAudio;
+	delete m_pHeartIcon;
 
 	for (auto& [name, pointer] : m_ShaderPrograms)
 	{
@@ -126,6 +127,9 @@ void Game::Initialise()
 
 	m_pCrystal = std::make_unique<CCrystal>();
 	m_pCrystal->Create("resources\\textures\\", "crystalTexture.jpg");
+
+	m_pHeartIcon = new CPlane();
+	m_pHeartIcon->Create("resources\\textures\\", "heart.png", 40.0f, 40.0f, 1.0f);
 
 	InitShaders();
 
@@ -275,6 +279,8 @@ void Game::InitShaders()
 	sShaderFileNames.push_back("toonShader.frag");
 	sShaderFileNames.push_back("outlineShader.vert");
 	sShaderFileNames.push_back("outlineShader.frag");
+	sShaderFileNames.push_back("uiShader.vert");
+	sShaderFileNames.push_back("uiShader.frag");
 
 	for (int i = 0; i < (int)sShaderFileNames.size(); i++) {
 		std::string sExt = sShaderFileNames[i].substr((int)sShaderFileNames[i].size() - 4, 4);
@@ -333,6 +339,13 @@ void Game::InitShaders()
 	pOutlineProgram->AddShaderToProgram(&shShaders[11]);
 	pOutlineProgram->LinkProgram();
 	m_ShaderPrograms["outlineShader"] = pOutlineProgram;
+
+	CShaderProgram* pUiProgram = new CShaderProgram;
+	pUiProgram->CreateProgram();
+	pUiProgram->AddShaderToProgram(&shShaders[12]);
+	pUiProgram->AddShaderToProgram(&shShaders[13]);
+	pUiProgram->LinkProgram();
+	m_ShaderPrograms["uiShader"] = pUiProgram;
 }
 
 std::shared_ptr<Entity> Game::FetchEntityByName(const std::string& name)
@@ -471,11 +484,13 @@ void Game::DisplayHUD()
 	glDisable(GL_DEPTH_TEST);
 
 	int score = 0;
+	int health = 0;
 	if (auto mc = FetchEntityByName("MC")) 
 	{
 		if (auto currencyMgr = mc->FindComponent<CurrencyManagerComponent>()) 
 		{
 			score = currencyMgr->GetScore();
+			health = currencyMgr->GetHealth();
 		}
 	}
 
@@ -519,6 +534,26 @@ void Game::DisplayHUD()
 	fontProgram->SetUniform("vColour", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
 	m_pFtFont->Render(width - 100, height - 70, 32, "x %d", score);
+
+	CShaderProgram* pUiProgram = GetShader("uiShader");
+	pUiProgram->UseProgram();
+
+	pUiProgram->SetUniform("projMatrix", hudOrtho);
+	pUiProgram->SetUniform("sampler0", 0);
+
+	for (int i = 0; i < health; i++)
+	{
+		float xPos = (width - 75.0f) - (i * 45.0f);
+
+		float yPos = 50.0f;
+
+		glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(xPos, yPos, 0.0f));
+
+		modelMatrix = glm::rotate(modelMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+		pUiProgram->SetUniform("modelMatrix", modelMatrix);
+		m_pHeartIcon->Render();
+	}
 }
 
 std::shared_ptr<Entity> Game::SpawnEntityFromTemplate(const std::string& templateName)

@@ -318,5 +318,11 @@
     <None Include="resources\shaders\outlineShader.vert">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="resources\shaders\uiShader.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\uiShader.vert">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
