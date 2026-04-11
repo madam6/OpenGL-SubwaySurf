@@ -117,6 +117,7 @@ public:
 private:
 	static const int FPS = 60;
 	void DisplayFrameRate();
+	void DisplayHUD();
 	void GameLoop();
 	GameWindow m_gameWindow;
 	HINSTANCE m_hInstance;

@@ -44,7 +44,6 @@ void PlayerTrackMovementComponent::AddRenderData(std::vector<RenderData>& render
 void PlayerTrackMovementComponent::Update(float dt)
 {
     m_CurrentDistance += dt * m_Speed;
-
     glm::vec3 p, up;
     m_CatmullRomComponentRef->m_track->Sample(m_CurrentDistance, p, up);
 
@@ -57,19 +56,16 @@ void PlayerTrackMovementComponent::Update(float dt)
 
     float targetOffset = m_TargetLane * m_LaneWidth;
     float dtSeconds = dt / 1000.0f;
-    float lerpFactor = 10.0f * dtSeconds;
-    lerpFactor = std::min(lerpFactor, 1.0f);
-    m_CurrentLaneOffset += (targetOffset - m_CurrentLaneOffset) * lerpFactor;
+
+    m_CurrentLaneOffset = targetOffset + (m_CurrentLaneOffset - targetOffset) * std::exp(-15.0f * dtSeconds);
 
     glm::vec3 finalPos = p + (right * m_CurrentLaneOffset) + (realUp * m_HeightFactor);
-
     glm::mat4 orientation = glm::mat4(
         glm::vec4(right, 0.0f),
         glm::vec4(realUp, 0.0f),
         glm::vec4(forward, 0.0f),
         glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
     );
-
     m_ModelViewComponentRef->SetPosition(finalPos);
     m_ModelViewComponentRef->SetOrientation(orientation);
 }

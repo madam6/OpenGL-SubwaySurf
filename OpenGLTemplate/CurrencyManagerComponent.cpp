@@ -7,6 +7,7 @@
 #include "Crystal.h"
 #include "Camera.h"
 std::shared_ptr<CCrystal> CurrencyManagerComponent::s_SharedCrystal = nullptr;
+std::shared_ptr<CHeart> CurrencyManagerComponent::s_SharedHeart = nullptr;
 
 namespace
 {
@@ -57,7 +58,27 @@ void CurrencyManagerComponent::Init()
     }
 
     EventSystem::Instance().Subscribe("OnCollision", this);
+
+    for (int i = 0; i < m_MaxHearts; i++)
+    {
+        auto newHeart = Game::GetInstance().SpawnEntityFromTemplate(m_HeartBaseName);
+        if (newHeart)
+        {
+            newHeart->SetName(m_HeartBaseName + "_" + std::to_string(i));
+            newHeart->Init();
+            m_Hearts.push_back(newHeart->FindComponent<CollectibleComponent>());
+        }
+    }
+
+    if (!s_SharedHeart)
+    {
+        s_SharedHeart = std::make_shared<CHeart>();
+        s_SharedHeart->Create("resources\\textures\\", "crystalTexture.jpg");
+    }
+
     RespawnAll();
+
+   
 }
 
 void CurrencyManagerComponent::Update(float dt)
@@ -84,6 +105,36 @@ void CurrencyManagerComponent::AddRenderData(std::vector<RenderData>& renderQueu
         }
     }
 
+    if (!m_Hearts.empty() && s_SharedHeart)
+    {
+        std::vector<glm::mat4> activeHeartMatrices;
+        for (auto& heart : m_Hearts)
+        {
+            if (heart && !heart->IsCollected())
+            {
+                auto mv = heart->GetOwner()->FindComponent<ModelViewComponent>();
+                if (mv)
+                {
+                    glm::mat4 model = glm::translate(glm::mat4(1.0f), mv->GetPosition());
+                    model *= mv->GetOrientation();
+                    model = glm::scale(model, mv->GetScale());
+                    activeHeartMatrices.push_back(model);
+                }
+            }
+        }
+
+        if (!activeHeartMatrices.empty())
+        {
+            RenderData hBatch;
+            hBatch.mesh = s_SharedHeart;
+            hBatch.shader = Game::GetInstance().GetShader("CrystalShader");
+            hBatch.isInstanced = true;
+            hBatch.instanceMatrices = activeHeartMatrices;
+            hBatch.useTexture = true;
+            renderQueue.push_back(hBatch);
+        }
+    }
+
     if (activeMatrices.empty()) return;
 
     RenderData batch;
@@ -98,19 +149,18 @@ void CurrencyManagerComponent::AddRenderData(std::vector<RenderData>& renderQueu
 
 void CurrencyManagerComponent::RespawnAll()
 {
-    for (auto& crystal : m_Crystals)
-    {
-        crystal->Collect();
-    }
+    for (auto& crystal : m_Crystals) crystal->Collect();
+    for (auto& heart : m_Hearts) heart->Collect();
 
     int numBatches = m_MinBatches + (rand() % (m_MaxBatches - m_MinBatches + 1));
     int crystalIndex = 0;
+    int heartIndex = 0;
+
     float currentBatchDist = m_PlayerRef->GetCurrentDistance() + 50.0f + (rand() % 50);
 
     for (int b = 0; b < numBatches; b++)
     {
         int crystalsInThisBatch = m_MinPerBatch + (rand() % (m_MaxPerBatch - m_MinPerBatch + 1));
-
         int currentLane = (rand() % 3) - 1;
 
         for (int i = 0; i < crystalsInThisBatch; i++)
@@ -118,67 +168,87 @@ void CurrencyManagerComponent::RespawnAll()
             if (crystalIndex >= m_Crystals.size()) break;
 
             float dist = currentBatchDist + (i * m_SpacingInBatch);
-
             glm::vec3 p, up, forwardVec;
             m_TrackRef->Sample(dist, p, up);
             m_TrackRef->Sample(dist + 1.0f, forwardVec);
 
             glm::vec3 forward = glm::normalize(forwardVec - p);
-            glm::vec3 safeUp = up;
-
-            if (glm::length(safeUp) < 0.001f) safeUp = glm::vec3(0.0f, 1.0f, 0.0f);
-
-            glm::vec3 right = glm::cross(forward, safeUp);
-
-            if (glm::length(right) < 0.001f)
-            {
-                right = glm::cross(forward, glm::vec3(1.0f, 0.0f, 0.0f));
-                if (glm::length(right) < 0.001f) right = glm::cross(forward, glm::vec3(0.0f, 0.0f, 1.0f));
-            }
-            right = glm::normalize(right);
+            glm::vec3 safeUp = glm::length(up) < 0.001f ? glm::vec3(0.0f, 1.0f, 0.0f) : up;
+            glm::vec3 right = glm::normalize(glm::cross(forward, safeUp));
             glm::vec3 realUp = glm::normalize(glm::cross(right, forward));
 
             glm::vec3 finalPos = p + (right * (currentLane * 10.0f)) + (realUp * 5.0f);
-
-            glm::mat4 orientation = glm::mat4(
-                glm::vec4(right, 0.0f), glm::vec4(realUp, 0.0f),
-                glm::vec4(forward, 0.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
-            );
+            glm::mat4 orientation = glm::mat4(glm::vec4(right, 0.0f), glm::vec4(realUp, 0.0f), glm::vec4(forward, 0.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
             m_Crystals[crystalIndex]->SpawnAt(finalPos, orientation);
             crystalIndex++;
         }
 
-        currentBatchDist += (crystalsInThisBatch * m_SpacingInBatch) + 30.0f + (rand() % 51);
+        currentBatchDist += (crystalsInThisBatch * m_SpacingInBatch);
+
+        if (heartIndex < m_Hearts.size() && (rand() % 100 < 50))
+        {
+            float heartDist = currentBatchDist + 15.0f;
+            int heartLane = (rand() % 3) - 1;
+
+            glm::vec3 p, up, forwardVec;
+            m_TrackRef->Sample(heartDist, p, up);
+            m_TrackRef->Sample(heartDist + 1.0f, forwardVec);
+
+            glm::vec3 forward = glm::normalize(forwardVec - p);
+            glm::vec3 safeUp = glm::length(up) < 0.001f ? glm::vec3(0.0f, 1.0f, 0.0f) : up;
+            glm::vec3 right = glm::normalize(glm::cross(forward, safeUp));
+            glm::vec3 realUp = glm::normalize(glm::cross(right, forward));
+
+            glm::vec3 finalPos = p + (right * (heartLane * 10.0f)) + (realUp * 5.0f);
+            glm::mat4 orientation = glm::mat4(glm::vec4(right, 0.0f), glm::vec4(realUp, 0.0f), glm::vec4(forward, 0.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+
+            m_Hearts[heartIndex]->SpawnAt(finalPos, orientation);
+            heartIndex++;
+        }
+
+        currentBatchDist += 30.0f + (rand() % 51);
     }
 }
 
 void CurrencyManagerComponent::OnEvent(const std::string& eventName, const EventData& data) 
 {
-    if (eventName == "OnCollision") 
+    if (eventName == "OnCollision")
     {
         CollisionPayload payload = std::any_cast<CollisionPayload>(data.payload);
+        Entity* hitItem = nullptr;
 
-        Entity* hitCrystal = nullptr;
-        if (payload.entityA->GetName() == "MC" 
-            && payload.entityB->GetName().find(m_CurrencyBaseName) != std::string::npos)
+        if (payload.entityA->GetName() == "MC" &&
+            (payload.entityB->GetName().find(m_CurrencyBaseName) != std::string::npos ||
+                payload.entityB->GetName().find(m_HeartBaseName) != std::string::npos))
         {
-            hitCrystal = payload.entityB;
-        }
-        else if (payload.entityB->GetName() == "MC"
-            && payload.entityA->GetName().find(m_CurrencyBaseName) != std::string::npos)
-        {
-            hitCrystal = payload.entityA;
+            hitItem = payload.entityB;
         }
 
-        if (hitCrystal) 
+        else if (payload.entityB->GetName() == "MC" &&
+            (payload.entityA->GetName().find(m_CurrencyBaseName) != std::string::npos ||
+                payload.entityA->GetName().find(m_HeartBaseName) != std::string::npos))
         {
-            auto collectible = hitCrystal->FindComponent<CollectibleComponent>();
+            hitItem = payload.entityA;
+        }
+
+        if (hitItem)
+        {
+            auto collectible = hitItem->FindComponent<CollectibleComponent>();
             if (collectible && !collectible->IsCollected())
             {
                 collectible->Collect();
-                m_Score += 1;
-                DEBUG_MSG("Collected! Score: %d", m_Score);
+
+                if (hitItem->GetName().find(m_CurrencyBaseName) != std::string::npos)
+                {
+                    m_Score += 1;
+                    DEBUG_MSG("Collected Crystal! Score: %d", m_Score);
+                }
+                else if (hitItem->GetName().find(m_HeartBaseName) != std::string::npos)
+                {
+                    m_Health += 1;
+                    DEBUG_MSG("Collected Heart! Health: %d", m_Health);
+                }
             }
         }
     }
@@ -203,4 +273,7 @@ void CurrencyManagerComponent::Apply(const PropertyMap& props)
 
     it = props.find("spacing_in_batch");
     if (it != props.end()) m_SpacingInBatch = std::stoi(it->second);
+
+    it = props.find("max_hearts");
+    if (it != props.end()) m_MaxHearts = std::stoi(it->second);
 }

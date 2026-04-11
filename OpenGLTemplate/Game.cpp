@@ -47,6 +47,7 @@ Source code drawn from a number of sources and examples, including contributions
 #include "MatrixStack.h"
 #include "OpenAssetImportMesh.h"
 #include "Audio.h"
+#include "CurrencyManagerComponent.h"
 #include <iostream>
 
 // Constructor
@@ -122,6 +123,9 @@ void Game::Initialise()
 	m_pAudio->LoadEventSound("resources\\Audio\\Boing.wav");
 	m_pAudio->LoadMusicStream("resources\\Audio\\DST-Garote.mp3");
 	m_pAudio->PlayMusicStream();
+
+	m_pCrystal = std::make_unique<CCrystal>();
+	m_pCrystal->Create("resources\\textures\\", "crystalTexture.jpg");
 
 	InitShaders();
 
@@ -249,6 +253,7 @@ void Game::Render()
 	modelViewMatrixStack.Pop();
 
 	DisplayFrameRate();
+	DisplayHUD();
 
 	SwapBuffers(m_gameWindow.Hdc());
 }
@@ -439,6 +444,65 @@ void Game::DisplayFrameRate()
 	}
 }
 
+void Game::DisplayHUD()
+{
+	RECT dimensions = m_gameWindow.GetDimensions();
+	int width = dimensions.right - dimensions.left;
+	int height = dimensions.bottom - dimensions.top;
+
+	glDisable(GL_DEPTH_TEST);
+
+	int score = 0;
+	if (auto mc = FetchEntityByName("MC")) 
+	{
+		if (auto currencyMgr = mc->FindComponent<CurrencyManagerComponent>()) 
+		{
+			score = currencyMgr->GetScore();
+		}
+	}
+
+	CShaderProgram* pCrystalProgram = GetShader("CrystalShader");
+	pCrystalProgram->UseProgram();
+
+	glm::mat4 hudOrtho = glm::ortho(0.0f, (float)width, 0.0f, (float)height, -100.0f, 100.0f);
+	pCrystalProgram->SetUniform("matrices.projMatrix", hudOrtho);
+	pCrystalProgram->SetUniform("matrices.viewMatrix", glm::mat4(1.0f));
+
+	static float s_hudTime = 0.0f;
+	s_hudTime += (float)(m_dt / 1000.0);
+	pCrystalProgram->SetUniform("uTime", s_hudTime);
+
+	pCrystalProgram->SetUniform("numLights", 1);
+	pCrystalProgram->SetUniform("lights[0].position", glm::vec4(0, 0, 1, 0));
+
+	pCrystalProgram->SetUniform("lights[0].La", glm::vec3(1.0f));
+	pCrystalProgram->SetUniform("material1.Ma", glm::vec3(1.0f));
+
+	pCrystalProgram->SetUniform("lights[0].Ld", glm::vec3(0.0f));
+	pCrystalProgram->SetUniform("material1.Md", glm::vec3(0.0f));
+
+	pCrystalProgram->SetUniform("lights[0].Ls", glm::vec3(0.0f));
+	pCrystalProgram->SetUniform("material1.Ms", glm::vec3(0.0f));
+	pCrystalProgram->SetUniform("material1.shininess", 1.0f);
+
+	pCrystalProgram->SetUniform("bUseTexture", 1);
+	pCrystalProgram->SetUniform("sampler0", 0);
+
+	glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(width - 140.0f, height - 70.0f, 0.0f));
+	modelMatrix = glm::scale(modelMatrix, glm::vec3(15.0f));
+
+	std::vector<glm::mat4> hudInstance = { modelMatrix };
+	m_pCrystal->RenderInstanced(hudInstance);
+
+	CShaderProgram* fontProgram = GetShader("FontShader");
+	fontProgram->UseProgram();
+	fontProgram->SetUniform("matrices.modelViewMatrix", glm::mat4(1.0f));
+	fontProgram->SetUniform("matrices.projMatrix", m_pCamera->GetOrthographicProjectionMatrix());
+	fontProgram->SetUniform("vColour", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+	m_pFtFont->Render(width - 100, height - 70, 32, "x %d", score);
+}
+
 std::shared_ptr<Entity> Game::SpawnEntityFromTemplate(const std::string& templateName)
 {
 	auto it = m_EntityTemplates.find(templateName);
@@ -548,21 +612,25 @@ LRESULT Game::ProcessEvents(HWND window,UINT message, WPARAM w_param, LPARAM l_p
 		break;
 
 	case WM_KEYDOWN:
-		eventData.payload = static_cast<int>(w_param);
-		EventSystem::Instance().BroadcastEvent("KeyDown", eventData);
-		switch(w_param) {
-		case VK_ESCAPE:
-			PostQuitMessage(0);
-			break;
-		case '1':
-			//m_pAudio->PlayEventSound();
-			break;
-		case VK_F1:
-			//m_pAudio->PlayEventSound();
-			break;
+		if ((l_param & (1 << 30)) == 0)
+		{
+			eventData.payload = static_cast<int>(w_param);
+			EventSystem::Instance().BroadcastEvent("KeyDown", eventData);
+
+			switch (w_param) 
+			{
+			case VK_ESCAPE:
+				PostQuitMessage(0);
+				break;
+			case '1':
+				//m_pAudio->PlayEventSound();
+				break;
+			case VK_F1:
+				//m_pAudio->PlayEventSound();
+				break;
+			}
 		}
 		break;
-
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;

@@ -147,6 +147,7 @@
     <ClInclude Include="FreeTypeFont.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameWindow.h" />
+    <ClInclude Include="Heart.h" />
     <ClInclude Include="HighResolutionTimer.h" />
     <ClInclude Include="MaterialComponent.h" />
     <ClInclude Include="MatrixStack.h" />
@@ -187,6 +188,7 @@
     <ClCompile Include="FreeTypeFont.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameWindow.cpp" />
+    <ClCompile Include="Heart.cpp" />
     <ClCompile Include="HighResolutionTimer.cpp" />
     <ClCompile Include="MaterialComponent.cpp" />
     <ClCompile Include="MatrixStack.cpp" />

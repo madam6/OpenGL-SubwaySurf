@@ -2,27 +2,20 @@
 #include "Texture.h"
 #include "VertexBufferObject.h"
 #include "Renderable.h"
+#include "Crystal.h"
 
-struct vertex {
-	glm::vec3 position;
-	glm::vec3 normal;
-	glm::vec2 textureCoord;
-	glm::vec3 color;
-};
-
-class CCrystal : public Renderable
+class CHeart : public Renderable
 {
 public:
-	CCrystal();
-	~CCrystal();
-	void Create(std::string directory, std::string front);
+	CHeart();
+	~CHeart();
+	void Create(std::string directory, std::string filename);
 	void Render();
 	void RenderInstanced(const std::vector<glm::mat4>& instanceMatrices) override;
 	void Release();
-private:
-	// Reads from CSV version of table created in report for task 1
-	void readFromCSV() override;
 
+private:
+	void readFromCSV() override;
 
 	UINT m_vao;
 	CVertexBufferObject m_vbo;
@@ -30,6 +23,6 @@ private:
 	std::string m_directory;
 	std::string m_filename;
 	GLuint m_instanceVBO;
-	
-	std::vector<vertex> m_crystalVertices;
+
+	std::vector<vertex> m_heartVertices;
 };

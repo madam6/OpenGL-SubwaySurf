@@ -146,6 +146,9 @@
     <ClInclude Include="CurrencyManagerComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Heart.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Audio.cpp">
@@ -261,6 +264,9 @@
     </ClCompile>
     <ClCompile Include="CurrencyManagerComponent.cpp">
       <Filter>Source Files\ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Heart.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

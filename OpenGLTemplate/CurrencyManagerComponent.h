@@ -3,6 +3,7 @@
 #include "EventSystem.h"
 #include "CollectibleComponent.h"
 #include "CatmullRom.h"
+#include "Heart.h"
 
 class PlayerTrackMovementComponent;
 
@@ -15,6 +16,7 @@ public:
     void Apply(const PropertyMap& props);
     ~CurrencyManagerComponent() { EventSystem::Instance().Unsubscribe("OnCollision", this); }
     void AddRenderData(std::vector<RenderData>& renderQueue) override;
+    int GetScore() const { return m_Score; }
 private:
     void RespawnAll();
 
@@ -22,6 +24,13 @@ private:
     std::shared_ptr<CCatmullRom> m_TrackRef;
     std::vector<std::shared_ptr<CollectibleComponent>> m_Crystals;
     static std::shared_ptr<CCrystal> s_SharedCrystal;
+
+    std::vector<std::shared_ptr<CollectibleComponent>> m_Hearts;
+    static std::shared_ptr<CHeart> s_SharedHeart;
+    std::string m_HeartBaseName = "Heart";
+    int m_MaxHearts = 10;
+    int m_Health = 3;
+
     int m_CurrentLap = 0;
     int m_Score = 0;
     int m_MinBatches = 2;
