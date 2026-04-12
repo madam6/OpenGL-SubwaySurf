@@ -301,6 +301,10 @@ void CCatmullRom::CreateTrack(std::string a_sDirectory, std::string a_sFilename)
 	m_texture.SetSamplerObjectParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
 	m_texture.SetSamplerObjectParameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
 
+	GLfloat maxAniso = 0.0f;
+	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAniso);
+	m_texture.SetSamplerObjectParameterf(GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAniso);
+
 	for (int i = 0; i < m_leftOffsetPoints.size(); i++)
 	{
 		m_trianglePoints.push_back(m_leftOffsetPoints[i]);

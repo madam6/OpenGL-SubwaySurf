@@ -32,6 +32,10 @@ private:
     int m_MaxHearts = 10;
     int m_Health = 3;
 
+    std::vector<std::shared_ptr<CollectibleComponent>> m_Fences;
+    std::string m_FenceBaseName = "Fence";
+    int m_MaxFences = 15;
+
     int m_CurrentLap = 0;
     int m_Score = 0;
     int m_MinBatches = 2;

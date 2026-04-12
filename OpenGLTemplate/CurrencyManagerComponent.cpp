@@ -71,6 +71,17 @@ void CurrencyManagerComponent::Init()
             m_Hearts.push_back(newHeart->FindComponent<CollectibleComponent>());
         }
     }
+    
+    for (int i = 0; i < m_MaxFences; i++)
+    {
+        auto newFence = Game::GetInstance().SpawnEntityFromTemplate(m_FenceBaseName);
+        if (newFence)
+        {
+            newFence->SetName(m_FenceBaseName + "_" + std::to_string(i));
+            newFence->Init();
+            m_Fences.push_back(newFence->FindComponent<CollectibleComponent>());
+        }
+    }
 
     if (!s_SharedHeart)
     {
@@ -177,10 +188,12 @@ void CurrencyManagerComponent::RespawnAll()
 {
     for (auto& crystal : m_Crystals) crystal->Collect();
     for (auto& heart : m_Hearts) heart->Collect();
+    for (auto& fence : m_Fences) fence->Collect();
 
     int numBatches = m_MinBatches + (rand() % (m_MaxBatches - m_MinBatches + 1));
     int crystalIndex = 0;
     int heartIndex = 0;
+    int fenceIndex = 0;
 
     float currentBatchDist = m_PlayerRef->GetCurrentDistance() + 50.0f + (rand() % 50);
 
@@ -233,6 +246,29 @@ void CurrencyManagerComponent::RespawnAll()
             heartIndex++;
         }
 
+        if (fenceIndex < m_Fences.size() && (rand() % 100 < 80))
+        {
+            float fenceDist = currentBatchDist + 30.0f;
+            int fenceLane = (rand() % 3) - 1;
+
+            glm::vec3 p, up, forwardVec;
+            m_TrackRef->Sample(fenceDist, p, up);
+            m_TrackRef->Sample(fenceDist + 1.0f, forwardVec);
+
+            glm::vec3 forward = glm::normalize(forwardVec - p);
+            glm::vec3 safeUp = glm::length(up) < 0.001f ? glm::vec3(0.0f, 1.0f, 0.0f) : up;
+            glm::vec3 right = glm::normalize(glm::cross(forward, safeUp));
+            glm::vec3 realUp = glm::normalize(glm::cross(right, forward));
+
+            glm::vec3 finalPos = p + (right * (fenceLane * 10.0f)) + (realUp * 3.9f);
+
+            glm::mat4 orientation = glm::mat4(glm::vec4(right, 0.0f), glm::vec4(realUp, 0.0f), glm::vec4(forward, 0.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+            orientation = glm::rotate(orientation, glm::radians(270.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+            m_Fences[fenceIndex]->SpawnAt(finalPos, orientation);
+            fenceIndex++;
+        }
+
         currentBatchDist += 30.0f + (rand() % 51);
     }
 }
@@ -246,14 +282,15 @@ void CurrencyManagerComponent::OnEvent(const std::string& eventName, const Event
 
         if (payload.entityA->GetName() == "MC" &&
             (payload.entityB->GetName().find(m_CurrencyBaseName) != std::string::npos ||
-                payload.entityB->GetName().find(m_HeartBaseName) != std::string::npos))
+                payload.entityB->GetName().find(m_HeartBaseName) != std::string::npos ||
+                payload.entityB->GetName().find(m_FenceBaseName) != std::string::npos))
         {
             hitItem = payload.entityB;
         }
-
         else if (payload.entityB->GetName() == "MC" &&
             (payload.entityA->GetName().find(m_CurrencyBaseName) != std::string::npos ||
-                payload.entityA->GetName().find(m_HeartBaseName) != std::string::npos))
+                payload.entityA->GetName().find(m_HeartBaseName) != std::string::npos ||
+                payload.entityA->GetName().find(m_FenceBaseName) != std::string::npos))
         {
             hitItem = payload.entityA;
         }
@@ -274,6 +311,11 @@ void CurrencyManagerComponent::OnEvent(const std::string& eventName, const Event
                 {
                     m_Health += 1;
                     DEBUG_MSG("Collected Heart! Health: %d", m_Health);
+                }
+                else if (hitItem->GetName().find(m_FenceBaseName) != std::string::npos)
+                {
+                    m_Health -= 1;
+                    DEBUG_MSG("Hit a Fence! Lost a heart! Health: %d", m_Health);
                 }
             }
         }

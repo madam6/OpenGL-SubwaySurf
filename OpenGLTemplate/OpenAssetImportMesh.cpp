@@ -337,24 +337,49 @@ bool COpenAssetImportMesh::InitMaterials(const aiScene* pScene, const std::strin
                     Ret = false;
                 }
                 else {
+                    m_Textures[i]->SetSamplerObjectParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                    m_Textures[i]->SetSamplerObjectParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                    m_Textures[i]->SetSamplerObjectParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
+                    m_Textures[i]->SetSamplerObjectParameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+                    GLfloat maxAniso = 0.0f;
+                    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAniso);
+                    m_Textures[i]->SetSamplerObjectParameterf(GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAniso);
                     printf("Loaded texture '%s'\n", FullPath.c_str());
                 }
             }
         }
 
         // Load a single colour texture matching the diffuse colour if no texture added
-        if (!m_Textures[i]) {
-		
-			aiColor3D color (0.f,0.f,0.f);
-			pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE,color);
+        if (!m_Textures[i])
+        {
+            // Fence hack
+            std::string fallbackTexture = Dir + "/stone_fence_old_low_rock_BaseColor.png";
 
-			m_Textures[i] = new CTexture();
-			BYTE data[3];
-			data[0] = (BYTE) (color[2]*255);
-			data[1] = (BYTE) (color[1]*255);
-			data[2] = (BYTE) (color[0]*255);
-			m_Textures[i]->CreateFromData(data, 1, 1, 24, GL_BGR, false);
+            m_Textures[i] = new CTexture();
+            if (m_Textures[i]->Load(fallbackTexture, true))
+            {
+                DEBUG_MSG("Forced fallback texture load for: %s", fallbackTexture.c_str());
+                m_Textures[i]->SetSamplerObjectParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                m_Textures[i]->SetSamplerObjectParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                m_Textures[i]->SetSamplerObjectParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
+                m_Textures[i]->SetSamplerObjectParameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
 
+                GLfloat maxAniso = 0.0f;
+                glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAniso);
+                m_Textures[i]->SetSamplerObjectParameterf(GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAniso);
+            }
+            else
+            {
+                aiColor3D color(0.f, 0.f, 0.f);
+                pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, color);
+
+                BYTE data[3];
+                data[0] = (BYTE)(color[2] * 255);
+                data[1] = (BYTE)(color[1] * 255);
+                data[2] = (BYTE)(color[0] * 255);
+                m_Textures[i]->CreateFromData(data, 1, 1, 24, GL_BGR, false);
+            }
         }
     }
 

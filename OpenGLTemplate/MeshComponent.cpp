@@ -43,7 +43,7 @@ void MeshComponent::AddRenderData(std::vector<RenderData>& renderQueue)
 {
 	RenderData data;
 	data.mesh = m_Mesh;
-
+	data.useTexture = true;
 	data.modelMatrix = glm::mat4(1.0f);
 
 	if (m_ModelViewComponentRef)
