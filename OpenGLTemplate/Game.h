@@ -38,6 +38,7 @@ struct RenderData
 	bool isInstanced = false;
 	bool useCubeMap = false;
 
+	bool isRecovering = false;
 	std::vector<glm::mat4> instanceMatrices;
 	bool isOutline = false;
 

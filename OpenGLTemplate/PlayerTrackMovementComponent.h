@@ -16,6 +16,8 @@ class PlayerTrackMovementComponent : public Component, public IObserver
 
 public:
 	void Apply(const PropertyMap& props);
+	void StartRecovery();
+	bool IsRecovering() const { return m_IsRecovering; }
 	float GetCurrentDistance() const { return m_CurrentDistance; }
 	~PlayerTrackMovementComponent()
 	{
@@ -29,6 +31,17 @@ private:
 	int m_TargetLane = 0;
 	float m_CurrentLaneOffset = 0.0f;
 	float m_LaneWidth = 10.0f;
+	
+	float m_RecordTimer = 0.0f;
+	float m_RecordedDistance = 0.0f;
+	int m_RecordedLane = 0;
+	float m_RecordedLaneOffset = 0.0f;
+
+	bool m_IsRecovering = false;
+	float m_RecoveryTimer = 0.0f;
+	float m_RecoveryDuration = 1.f;
+	float m_StartRecoveryDistance = 0.0f;
+	float m_StartRecoveryLaneOffset = 0.0f;
 
 	// properties
 	float m_Speed{};

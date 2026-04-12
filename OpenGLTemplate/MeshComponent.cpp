@@ -6,6 +6,7 @@
 #include "MaterialComponent.h"
 #include "ComponentRegistry.h"
 #include "Renderable.h"
+#include "PlayerTrackMovementComponent.h"
 
 namespace
 {
@@ -69,7 +70,12 @@ void MeshComponent::AddRenderData(std::vector<RenderData>& renderQueue)
 		data.Ms = m_MaterialComponent->GetMs();
 		data.shininess = m_MaterialComponent->GetShiny();
 	}
-	
+
+	if (auto ptMv = GetOwner()->FindComponent<PlayerTrackMovementComponent>())
+	{
+		data.isRecovering = ptMv->IsRecovering();
+	}
+
 	renderQueue.push_back(std::move(data));
 }
 

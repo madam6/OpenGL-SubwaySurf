@@ -130,7 +130,7 @@ void Game::Initialise()
 
 	m_pHeartIcon = new CPlane();
 	m_pHeartIcon->Create("resources\\textures\\", "heart.png", 40.0f, 40.0f, 1.0f);
-
+	
 	InitShaders();
 
 	std::vector<std::string> entityLines = ReadEntityLines("resources\\entities.cfg");
@@ -157,6 +157,7 @@ void Game::Initialise()
 		m_EntityTemplates[currentEntityName] = currentEntityLines;
 		m_entities.push_back(EntityParser::Create(currentEntityLines));
 	}
+
 
 	for (size_t i = 0; i < m_entities.size(); i++)
 	{
@@ -393,6 +394,17 @@ CShaderProgram* Game::GetShader(const std::string& name) const
 
 void Game::Update() 
 {
+	int health = 3;
+	if (auto mc = FetchEntityByName("MC"))
+	{
+		if (auto currencyMgr = mc->FindComponent<CurrencyManagerComponent>())
+		{
+			health = currencyMgr->GetHealth();
+		}
+	}
+
+	if (health <= 0) return;
+
 	for (size_t i = 0; i < m_entities.size(); i++)
 	{
 		m_entities[i]->Update(m_dt);
@@ -553,6 +565,25 @@ void Game::DisplayHUD()
 
 		pUiProgram->SetUniform("modelMatrix", modelMatrix);
 		m_pHeartIcon->Render();
+	}
+
+	if (health <= 0)
+	{
+		CShaderProgram* fontProgram = GetShader("FontShader");
+		fontProgram->UseProgram();
+		fontProgram->SetUniform("matrices.modelViewMatrix", glm::mat4(1.0f));
+		fontProgram->SetUniform("matrices.projMatrix", m_pCamera->GetOrthographicProjectionMatrix());
+
+		fontProgram->SetUniform("vColour", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+
+		std::string deathText = "YOU ARE DEAD";
+		int textWidth = m_pFtFont->GetTextWidth(deathText, 80);
+		m_pFtFont->Render((width / 2) - (textWidth / 2), height / 2, 80, deathText.c_str());
+
+		fontProgram->SetUniform("vColour", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+		std::string subText = "Press ESC to exit";
+		int subWidth = m_pFtFont->GetTextWidth(subText, 32);
+		m_pFtFont->Render((width / 2) - (subWidth / 2), (height / 2) - 60, 32, subText.c_str());
 	}
 }
 

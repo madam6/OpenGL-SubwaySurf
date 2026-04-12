@@ -7,7 +7,8 @@ in vec3 vPosition;
 out vec4 vOutputColour;
 
 uniform sampler2D sampler0;
-
+uniform int uIsRecovering; 
+uniform float uTime;
 #include "light.glsl"
 
 void main()
@@ -39,5 +40,19 @@ void main()
         }
     }
 
-    vOutputColour = texColour * vec4(ambientTotal + diffuseTotal + specularTotal, 1.0);
+    vec4 finalColor = texColour * vec4(ambientTotal + diffuseTotal + specularTotal, 1.0);
+
+    if (uIsRecovering == 1) 
+    {
+        if (sin(uTime * 30.0) > 0.0) 
+        {
+            finalColor = mix(finalColor, vec4(1.0, 0.0, 0.0, 1.0), 0.5); 
+        } 
+        else 
+        {
+            discard; 
+        }
+    }
+    
+    vOutputColour = finalColor;
 }

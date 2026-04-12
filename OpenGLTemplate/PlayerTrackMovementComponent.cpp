@@ -43,7 +43,43 @@ void PlayerTrackMovementComponent::AddRenderData(std::vector<RenderData>& render
 
 void PlayerTrackMovementComponent::Update(float dt)
 {
-    m_CurrentDistance += dt * m_Speed;
+    float dtSeconds = dt / 1000.0f;
+
+    if (m_IsRecovering)
+    {
+        m_RecoveryTimer += dtSeconds;
+        float t = m_RecoveryTimer / m_RecoveryDuration;
+        if (t >= 1.0f)
+        {
+            t = 1.0f;
+            m_IsRecovering = false;
+            m_CurrentDistance = m_RecordedDistance;
+            m_CurrentLaneOffset = m_RecordedLaneOffset;
+            m_TargetLane = m_RecordedLane;
+        }
+        else
+        {
+            m_CurrentDistance = glm::mix(m_StartRecoveryDistance, m_RecordedDistance, t);
+            m_CurrentLaneOffset = glm::mix(m_StartRecoveryLaneOffset, m_RecordedLaneOffset, t);
+        }
+    }
+    else
+    {
+        m_CurrentDistance += dt * m_Speed;
+
+        m_RecordTimer += dtSeconds;
+        if (m_RecordTimer >= 3.0f)
+        {
+            m_RecordTimer = 0.0f;
+            m_RecordedDistance = m_CurrentDistance;
+            m_RecordedLane = m_TargetLane;
+            m_RecordedLaneOffset = m_CurrentLaneOffset;
+        }
+
+        float targetOffset = m_TargetLane * m_LaneWidth;
+        m_CurrentLaneOffset = targetOffset + (m_CurrentLaneOffset - targetOffset) * std::exp(-15.0f * dtSeconds);
+    }
+
     glm::vec3 p, up;
     m_CatmullRomComponentRef->m_track->Sample(m_CurrentDistance, p, up);
 
@@ -54,11 +90,6 @@ void PlayerTrackMovementComponent::Update(float dt)
     glm::vec3 right = glm::normalize(glm::cross(forward, up));
     glm::vec3 realUp = glm::normalize(glm::cross(right, forward));
 
-    float targetOffset = m_TargetLane * m_LaneWidth;
-    float dtSeconds = dt / 1000.0f;
-
-    m_CurrentLaneOffset = targetOffset + (m_CurrentLaneOffset - targetOffset) * std::exp(-15.0f * dtSeconds);
-
     glm::vec3 finalPos = p + (right * m_CurrentLaneOffset) + (realUp * m_HeightFactor);
     glm::mat4 orientation = glm::mat4(
         glm::vec4(right, 0.0f),
@@ -66,6 +97,7 @@ void PlayerTrackMovementComponent::Update(float dt)
         glm::vec4(forward, 0.0f),
         glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
     );
+
     m_ModelViewComponentRef->SetPosition(finalPos);
     m_ModelViewComponentRef->SetOrientation(orientation);
 }
@@ -95,4 +127,14 @@ void PlayerTrackMovementComponent::Apply(const PropertyMap& props)
 
     auto heightIt = props.find("height_factor");
     if (heightIt != props.end()) m_HeightFactor = std::stof(heightIt->second);
+}
+
+void PlayerTrackMovementComponent::StartRecovery()
+{
+    if (m_IsRecovering) return;
+    m_IsRecovering = true;
+    m_RecoveryTimer = 0.0f;
+
+    m_StartRecoveryDistance = m_CurrentDistance;
+    m_StartRecoveryLaneOffset = m_CurrentLaneOffset;
 }

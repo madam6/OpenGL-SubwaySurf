@@ -76,7 +76,7 @@ void CCubemap::Create(std::string sPositiveX, std::string sNegativeX, std::strin
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_uiTexture);
 
 	// Load the six sides
-	BYTE *pbImagePosX, *pbImageNegX, *pbImagePosY, *pbImageNegY, *pbImagePosZ, *pbImageNegZ;
+	BYTE* pbImagePosX{}, * pbImageNegX{}, * pbImagePosY{}, * pbImageNegY{}, * pbImagePosZ{}, * pbImageNegZ{};
 
 	LoadTexture(sPositiveX, &pbImagePosX, iWidth, iHeight);
 	LoadTexture(sNegativeX, &pbImageNegX, iWidth, iHeight);

@@ -96,6 +96,20 @@ void CurrencyManagerComponent::Init()
 
 void CurrencyManagerComponent::Update(float dt)
 {
+    if (m_PlayerRef && m_TrackRef)
+    {
+        float currentDist = m_PlayerRef->GetCurrentDistance();
+        int currentLap = m_TrackRef->CurrentLap(currentDist);
+
+        if (currentLap > m_CurrentLap)
+        {
+            m_CurrentLap = currentLap;
+
+            RespawnAll();
+
+            DEBUG_MSG("Lap %d completed!", m_CurrentLap);
+        }
+    }
 }
 
 void CurrencyManagerComponent::AddRenderData(std::vector<RenderData>& renderQueue)
@@ -277,6 +291,7 @@ void CurrencyManagerComponent::OnEvent(const std::string& eventName, const Event
 {
     if (eventName == "OnCollision")
     {
+        if (m_PlayerRef && m_PlayerRef->IsRecovering()) return;
         CollisionPayload payload = std::any_cast<CollisionPayload>(data.payload);
         Entity* hitItem = nullptr;
 
@@ -300,7 +315,11 @@ void CurrencyManagerComponent::OnEvent(const std::string& eventName, const Event
             auto collectible = hitItem->FindComponent<CollectibleComponent>();
             if (collectible && !collectible->IsCollected())
             {
-                collectible->Collect();
+                // To avoid collecting fences
+                if (hitItem->GetName().find(m_FenceBaseName) == std::string::npos)
+                {
+                    collectible->Collect();
+                }
 
                 if (hitItem->GetName().find(m_CurrencyBaseName) != std::string::npos)
                 {
@@ -316,6 +335,7 @@ void CurrencyManagerComponent::OnEvent(const std::string& eventName, const Event
                 {
                     m_Health -= 1;
                     DEBUG_MSG("Hit a Fence! Lost a heart! Health: %d", m_Health);
+                    if (m_PlayerRef) m_PlayerRef->StartRecovery();
                 }
             }
         }
@@ -344,4 +364,7 @@ void CurrencyManagerComponent::Apply(const PropertyMap& props)
 
     it = props.find("max_hearts");
     if (it != props.end()) m_MaxHearts = std::stoi(it->second);
+    
+    it = props.find("health");
+    if (it != props.end()) m_Health = std::stoi(it->second);
 }

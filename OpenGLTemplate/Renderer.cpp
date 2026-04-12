@@ -40,6 +40,7 @@ void Renderer::Render(const FrameData& frameData)
             shader->SetUniform("sampler0", 0);
 
             shader->SetUniform("uTime", frameData.time);
+            shader->SetUniform("uIsRecovering", renderable.isRecovering ? 1 : 0);
 
             shader->SetUniform("material1.Ma", renderable.Ma);
             shader->SetUniform("material1.Md", renderable.Md);

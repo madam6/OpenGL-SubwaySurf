@@ -30,7 +30,7 @@ void CatmullRomComponent::Init()
 
     m_track->CreateOffsetCurves();
 
-    m_track->CreateTrack("resources\\textures\\", "road.jpg");
+    m_track->CreateTrack("resources\\textures\\", "cobblestone.jpg");
 }
 
 void CatmullRomComponent::AddRenderData(std::vector<RenderData>& renderQueue)

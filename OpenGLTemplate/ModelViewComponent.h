@@ -12,6 +12,7 @@ public:
 	void SetPosition(const glm::vec3& newPosition) { position = newPosition; }
 	glm::vec3 GetPosition() const { return position; }
 	glm::vec3 GetScale() const { return scale; }
+	void SetScale(const glm::vec3& newScale) { scale = newScale; }
 	void Apply(const PropertyMap& props);
 
 	void SetOrientation(const glm::mat4& newOrientation) { orientation = newOrientation; }
