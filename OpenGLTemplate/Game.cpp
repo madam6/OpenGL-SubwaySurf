@@ -117,7 +117,7 @@ void Game::Initialise()
 	m_pCamera->SetPerspectiveProjectionMatrix(45.0f, (float)width / (float)height, 0.5f, 5000.0f);
 
 	m_pSkybox->Create(2500.0f);
-	m_pPlanarTerrain->Create("resources\\textures\\", "grassfloor01.jpg", 2000.0f, 2000.0f, 50.0f);
+	m_pPlanarTerrain->CreatePerlinTerrain("resources\\textures\\", "grassfloor01.jpg", 2000.0f, 2000.0f, 50.0f);
 	m_pFtFont->LoadSystemFont("arial.ttf", 32);
 
 	m_pAudio->Initialise();

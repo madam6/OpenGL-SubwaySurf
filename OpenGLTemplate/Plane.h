@@ -10,6 +10,7 @@ public:
 	CPlane();
 	~CPlane();
 	void Create(std::string sDirectory, std::string sFilename, float fWidth, float fHeight, float fTextureRepeat);
+	void CreatePerlinTerrain(std::string sDirectory, std::string sFilename, float fWidth, float fHeight, float fTextureRepeat);
 	void Render();
 	void Release();
 private:
@@ -20,4 +21,8 @@ private:
 	std::string m_filename;
 	float m_width;
 	float m_height;
+	int m_gridResolution;
+	int m_numVertices;
+
+	bool m_isPerlinTerrain{ false };
 };

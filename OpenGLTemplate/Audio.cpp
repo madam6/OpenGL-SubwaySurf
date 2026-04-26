@@ -55,14 +55,13 @@ bool CAudio::PlayEventSound()
 bool CAudio::LoadMusicStream(const char *filename)
 {
 	result = m_FmodSystem->createStream(filename, NULL | FMOD_LOOP_NORMAL, 0, &m_music);
+	
 	FmodErrorCheck(result);
 
 	if (result != FMOD_OK) 
 		return false;
 
 	return true;
-	
-
 }
 
 // Play a music stream

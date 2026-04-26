@@ -10,6 +10,7 @@
 #include <fstream>
 #include <string>
 #include <any>
+#include <algorithm>
 
 #include "./include/glm/gtc/type_ptr.hpp"
 #include "./include/glm/gtc/matrix_transform.hpp"
