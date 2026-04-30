@@ -116,8 +116,10 @@ void Game::Initialise()
 	m_pCamera->SetOrthographicProjectionMatrix(width, height);
 	m_pCamera->SetPerspectiveProjectionMatrix(45.0f, (float)width / (float)height, 0.5f, 5000.0f);
 
+	std::array<std::string, 3> mountainTextures{ "grassfloor01.jpg", "dirtpile01.jpg", "Tile41a.jpg"};
+
 	m_pSkybox->Create(2500.0f);
-	m_pPlanarTerrain->CreatePerlinTerrain("resources\\textures\\", "grassfloor01.jpg", 2000.0f, 2000.0f, 50.0f);
+	m_pPlanarTerrain->CreatePerlinTerrain("resources\\textures\\", mountainTextures, 2000.0f, 2000.0f, 50.0f);
 	m_pFtFont->LoadSystemFont("arial.ttf", 32);
 
 	m_pAudio->Initialise();
@@ -186,15 +188,20 @@ void Game::Render()
 	modelViewMatrixStack.LookAt(m_pCamera->GetPosition(), m_pCamera->GetView(), m_pCamera->GetUpVector());
 	glm::mat4 viewMatrix = modelViewMatrixStack.Top();
 
-	pMainProgram->SetUniform("numLights", 1);
+	pMainProgram->SetUniform("numLights", 2);
 
 	glm::vec4 lightPosition1 = glm::vec4(-100, 100, -100, 1);
+	glm::vec4 sunPosition = glm::vec4(200, 300, -400, 1);
 
 	pMainProgram->SetUniform("lights[0].position", viewMatrix * lightPosition1);
-	pMainProgram->SetUniform("lights[0].La", glm::vec3(1.0f));
-	pMainProgram->SetUniform("lights[0].Ld", glm::vec3(1.0f));
-	pMainProgram->SetUniform("lights[0].Ls", glm::vec3(1.0f));
+	pMainProgram->SetUniform("lights[0].La", glm::vec3(0.7f));
+	pMainProgram->SetUniform("lights[0].Ld", glm::vec3(0.5f));
+	pMainProgram->SetUniform("lights[0].Ls", glm::vec3(0.5f));
 
+	pMainProgram->SetUniform("lights[1].position", viewMatrix * sunPosition);
+	pMainProgram->SetUniform("lights[1].La", glm::vec3(0.0f, 0.0f, 0.0f));
+	pMainProgram->SetUniform("lights[1].Ld", glm::vec3(0.6f, 0.6f, 0.2f));
+	pMainProgram->SetUniform("lights[1].Ls", glm::vec3(0.8f, 0.8f, 0.2f));
 
 	pMainProgram->SetUniform("material1.Ma", glm::vec3(1.0f));
 	pMainProgram->SetUniform("material1.Md", glm::vec3(0.0f));
@@ -217,7 +224,15 @@ void Game::Render()
 	modelViewMatrixStack.Push();
 	pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 	pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
+	pMainProgram->SetUniform("sampler0", 0);
+	pMainProgram->SetUniform("sampler1", 1);
+	pMainProgram->SetUniform("sampler2", 2);
+	pMainProgram->SetUniform("isTerrain", true);
+	pMainProgram->SetUniform("fMinHeight", -10.f);
+	pMainProgram->SetUniform("fMaxHeight", 17.f);
+	pMainProgram->SetUniform("material1.Md", glm::vec3(1.0f));
 	m_pPlanarTerrain->Render();
+	pMainProgram->SetUniform("isTerrain", false);
 	modelViewMatrixStack.Pop();
 
 
@@ -244,10 +259,17 @@ void Game::Render()
 
 	FrameData::Light light;
 	light.position = lightPosition1;
-	light.La = glm::vec3(1.f);
-	light.Ld = glm::vec3(1.0f);
-	light.Ls = glm::vec3(1.0f);
+	light.La = glm::vec3(0.9f);
+	light.Ld = glm::vec3(0.5f);
+	light.Ls = glm::vec3(0.5f);
 	frameData.lights.push_back(light);
+
+	FrameData::Light sunLight;
+	sunLight.position = sunPosition;
+	sunLight.La = glm::vec3(0.0f, 0.0f, 0.0f);
+	sunLight.Ld = glm::vec3(0.6f, 0.6f, 0.2f);
+	sunLight.Ls = glm::vec3(0.8f, 0.8f, 0.2f);
+	frameData.lights.push_back(sunLight);
 
 	static float s_totalTime = 0.0f;
 	s_totalTime += (float)(m_dt / 1000.0);

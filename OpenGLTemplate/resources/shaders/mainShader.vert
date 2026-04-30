@@ -17,13 +17,97 @@ out vec3 vColour;
 out vec2 vTexCoord;    
 out vec3 worldPosition;    
 
+uniform bool isTerrain;
+
+// Pseudo-random hash
+vec2 randomGradient(vec2 p) 
+{
+    p = vec2(dot(p, vec2(145.6, 291.2)), dot(p, vec2(312.2, 169.3)));
+    return normalize(-1.0 + 2.0 * fract(sin(p) * 64671.217333)); // normalize to -1, 1 range so that arrows can point anywhere
+}
+
+vec2 perlinFadeFunc(vec2 t) 
+{
+    return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
+}
+
+float perlinNoise(vec2 uv)
+{
+    vec2 gridId = floor(uv);
+
+    vec2 fraction = fract(uv);
+
+    vec2 gradBottomLeft = randomGradient(gridId + vec2(0.0, 0.0));
+    vec2 gradBottomRight = randomGradient(gridId + vec2(1.0, 0.0));
+    vec2 gradTopLeft = randomGradient(gridId + vec2(0.0, 1.0));
+    vec2 gradTopRight = randomGradient(gridId + vec2(1.0, 1.0));
+
+    vec2 distBottomLeft  = fraction - vec2(0.0, 0.0);
+    vec2 distBottomRight = fraction - vec2(1.0, 0.0);
+    vec2 distTopLeft = fraction - vec2(0.0, 1.0);
+    vec2 distTopRight = fraction - vec2(1.0, 1.0);
+
+    float dotBottomLeft = dot(gradBottomLeft, distBottomLeft);
+    float dotBottomRight = dot(gradBottomRight, distBottomRight);
+    float dotTopLeft = dot(gradTopLeft, distTopLeft);
+    float dotTopRight = dot(gradTopRight, distTopRight);
+
+    vec2 smoothedFraction = perlinFadeFunc(fraction);
+
+    float mixBottom = mix(dotBottomLeft, dotBottomRight, smoothedFraction.x);
+    float mixTop = mix(dotTopLeft, dotTopRight, smoothedFraction.x);
+
+    return mix(mixBottom, mixTop, smoothedFraction.y);
+}
+
 void main()
-{    
-    worldPosition = inPosition;
-    gl_Position = matrices.projMatrix * matrices.modelViewMatrix * vec4(inPosition, 1.0f);
+{   
+    vec3 vEyeNorm;
+    vec4 vEyePosition;
+
+    if (isTerrain)
+    {
+        float noiseScale = 0.01;
+        float epsilon = 0.1;
+        float mountainHegiht = 50.0;
+
+        vec2 noiseCoord = inPosition.xz * noiseScale;
+        float y0 = perlinNoise(noiseCoord) * mountainHegiht;
+
+        vec3 p0 = vec3(inPosition.x, y0, inPosition.z);
+
+        // Small step on x axis
+        vec2 noiseCoordsX = (inPosition.xz + vec2(epsilon, 0.0)) * noiseScale;
+        float y1 = perlinNoise(noiseCoordsX) * mountainHegiht;
+        vec3 p1 = vec3(inPosition.x + epsilon, y1, inPosition.z);
+
+        // Small step on z axis
+        vec2 noiseCoordsZ = (inPosition.xz + vec2(0.0, epsilon)) * noiseScale;
+        float y2 = perlinNoise(noiseCoordsZ) * mountainHegiht;
+        vec3 p2 = vec3(inPosition.x, y2, inPosition.z + epsilon);
+
+        // Use this new vectors to calculate slope and use cross product to find the normal
+        vec3 rightSlope = p1 - p0;
+        vec3 forwardSlope = p2 - p0;
+
+
+        worldPosition = p0;
+        gl_Position = matrices.projMatrix * matrices.modelViewMatrix * vec4(p0, 1.0f);
+
+        vec3 newNormal = normalize(cross(forwardSlope, rightSlope));
+
+        vEyeNorm = normalize(matrices.normalMatrix * newNormal);
+        vEyePosition = matrices.modelViewMatrix * vec4(p0, 1.0f);
+    }
+    else
+    {
+        worldPosition = inPosition;
+        gl_Position = matrices.projMatrix * matrices.modelViewMatrix * vec4(inPosition, 1.0f);
+        vEyeNorm = normalize(matrices.normalMatrix * inNormal);
+        vEyePosition = matrices.modelViewMatrix * vec4(inPosition, 1.0f);
+    }
     
-    vec3 vEyeNorm = normalize(matrices.normalMatrix * inNormal);
-    vec4 vEyePosition = matrices.modelViewMatrix * vec4(inPosition, 1.0f);
+    
         
     vColour = PhongModel(vEyePosition, vEyeNorm);
     vTexCoord = inCoord;

@@ -40,7 +40,7 @@ void main()
         }
     }
 
-    vec4 finalColor = texColour * vec4(ambientTotal + diffuseTotal + specularTotal, 1.0);
+    vec4 finalColor = texColour * vec4(ambientTotal + diffuseTotal + specularTotal*2, 1.0);
 
     if (uIsRecovering == 1) 
     {
