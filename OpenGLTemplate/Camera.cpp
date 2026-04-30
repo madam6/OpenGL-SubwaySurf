@@ -16,7 +16,7 @@ CCamera::CCamera()
 	m_CameraModes.push_back(std::make_unique<FreeCam>());
 	m_CameraModes.push_back(std::make_unique<PathBuilderCam>());
 	m_CameraModeIndex = 0;
-	m_CurrentMode = mode::normal;
+	m_CurrentMode = mode::follow;
 	m_speed = 0.025f;
 }
 CCamera::~CCamera()
@@ -110,7 +110,7 @@ void CCamera::TranslateByKeyboard(double dt)
 			break;
 		}
 	}
-
+	DEBUG_MSG("Current mode %i", m_CurrentMode);
 	static bool tabWasPressed = false;
 	bool tabIsPressed = (GetKeyState(VK_TAB) & 0x80) != 0;
 
@@ -200,5 +200,6 @@ void CCamera::IncrementCameraIndexSafe()
 void CCamera::DecrementCameraIndexSafe()
 {
 	m_CameraModeIndex = (m_CameraModeIndex - 1) % m_CameraModes.size();
+	m_CurrentMode = static_cast<mode>(m_CameraModeIndex);
 }
 

@@ -67,7 +67,7 @@ void main()
 
     if (isTerrain)
     {
-        float noiseScale = 0.01;
+        float noiseScale = 0.007;
         float epsilon = 0.1;
         float mountainHegiht = 50.0;
 

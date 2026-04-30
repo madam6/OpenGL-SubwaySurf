@@ -283,7 +283,7 @@ void CurrencyManagerComponent::RespawnAll()
             fenceIndex++;
         }
 
-        currentBatchDist += 30.0f + (rand() % 51);
+        currentBatchDist += 150.0f + (rand() % 101);
     }
 }
 

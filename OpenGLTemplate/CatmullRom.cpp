@@ -117,20 +117,20 @@ bool CCatmullRom::Sample(float d, glm::vec3& p, glm::vec3& up)
 
 	float fTotalLength = m_distances[m_distances.size() - 1];
 
-	// The the current length along the control polygon; handle the case where we've looped around the track
-	float fLength = d - (int)(d / fTotalLength) * fTotalLength;
+	float fLength = fmod(d, fTotalLength);
+	if (fLength < 0.0f) fLength += fTotalLength;
 
-	// Find the current segment
 	int j = -1;
 	for (int i = 0; i < (int)m_distances.size() - 1; i++) {
-		if (fLength >= m_distances[i] && fLength < m_distances[i + 1]) {
-			j = i; // found it!
+		if (fLength >= m_distances[i] && fLength <= m_distances[i + 1]) {
+			j = i;
 			break;
 		}
 	}
 
-	if (j == -1)
-		return false;
+	if (j == -1) {
+		j = m_distances.size() - 2;
+	}
 
 	// Interpolate on current segment -- get t
 	float fSegmentLength = m_distances[j + 1] - m_distances[j];
@@ -244,7 +244,7 @@ void CCatmullRom::ReadTrackCsv()
 void CCatmullRom::CreateCentreline()
 {
 	SetControlPoints();
-	UniformlySampleControlPoints(5000);
+	UniformlySampleControlPoints(15000);
 
 	CreateListGPUData(m_vaoCentreline, m_centrelinePoints);
 }

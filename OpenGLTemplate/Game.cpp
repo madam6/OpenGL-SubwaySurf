@@ -116,7 +116,7 @@ void Game::Initialise()
 	m_pCamera->SetOrthographicProjectionMatrix(width, height);
 	m_pCamera->SetPerspectiveProjectionMatrix(45.0f, (float)width / (float)height, 0.5f, 5000.0f);
 
-	std::array<std::string, 3> mountainTextures{ "grassfloor01.jpg", "dirtpile01.jpg", "Tile41a.jpg"};
+	std::array<std::string, 3> mountainTextures{ "mud.jpg", "grass.jpg", "top.jpg"};
 
 	m_pSkybox->Create(2500.0f);
 	m_pPlanarTerrain->CreatePerlinTerrain("resources\\textures\\", mountainTextures, 2000.0f, 2000.0f, 50.0f);
