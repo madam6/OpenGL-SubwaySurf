@@ -106,6 +106,66 @@ void COpenAssetImportMesh::Clear()
 	glDeleteVertexArrays(1, &m_vao);
 }
 
+void COpenAssetImportMesh::RenderInstanced(const std::vector<glm::mat4>& instanceMatrices)
+{
+    if (instanceMatrices.empty()) return;
+
+    glBindVertexArray(m_vao);
+
+    if (m_instanceVBO == 0)
+    {
+        glGenBuffers(1, &m_instanceVBO);
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, m_instanceVBO);
+    glBufferData(GL_ARRAY_BUFFER, instanceMatrices.size() * sizeof(glm::mat4), instanceMatrices.data(), GL_DYNAMIC_DRAW);
+
+    for (int i = 0; i < 4; i++) 
+    {
+        glEnableVertexAttribArray(5 + i);
+        glVertexAttribPointer(5 + i, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4) * i));
+        glVertexAttribDivisor(5 + i, 1);
+    }
+
+    for (unsigned int i = 0; i < m_Entries.size(); i++)
+    {
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
+        glEnableVertexAttribArray(3);
+        glEnableVertexAttribArray(4);
+
+        glBindBuffer(GL_ARRAY_BUFFER, m_Entries[i].vbo);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)12);
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)20);
+        glVertexAttribIPointer(3, 4, GL_INT, sizeof(Vertex), (const GLvoid*)32);
+        glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)48);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Entries[i].ibo);
+
+        const unsigned int MaterialIndex = m_Entries[i].MaterialIndex;
+        if (MaterialIndex < m_Textures.size() && m_Textures[MaterialIndex]) 
+        {
+            m_Textures[MaterialIndex]->Bind(0);
+        }
+
+        glDrawElementsInstanced(GL_TRIANGLES, m_Entries[i].NumIndices, GL_UNSIGNED_INT, 0, (GLsizei)instanceMatrices.size());
+
+        glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
+        glDisableVertexAttribArray(2);
+        glDisableVertexAttribArray(3);
+        glDisableVertexAttribArray(4);
+    }
+
+    for (int i = 0; i < 4; i++) 
+    {
+        glDisableVertexAttribArray(5 + i);
+    }
+    glBindVertexArray(0);
+}
+
 
 bool COpenAssetImportMesh::Load(const std::string& Filename)
 {
@@ -353,8 +413,16 @@ bool COpenAssetImportMesh::InitMaterials(const aiScene* pScene, const std::strin
         // Load a single colour texture matching the diffuse colour if no texture added
         if (!m_Textures[i])
         {
-            // Fence hack
-            std::string fallbackTexture = Dir + "/stone_fence_old_low_rock_BaseColor.png";
+            std::string fallbackTexture;
+            if (Dir.find("Palm") != std::string::npos)
+            {
+                fallbackTexture = Dir + "\\Palm_Tree_1_Plam_Tree_AlbedoTransparency.png";
+            }
+            else
+            {
+                // Fence hack
+                fallbackTexture = Dir + "\\stone_fence_old_low_rock_BaseColor.png";
+            }
 
             m_Textures[i] = new CTexture();
             if (m_Textures[i]->Load(fallbackTexture, true))

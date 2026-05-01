@@ -117,13 +117,15 @@ bool CCatmullRom::Sample(float d, glm::vec3& p, glm::vec3& up)
 
 	float fTotalLength = m_distances[m_distances.size() - 1];
 
+	// The the current length along the control polygon; handle the case where we've looped around the track
 	float fLength = fmod(d, fTotalLength);
 	if (fLength < 0.0f) fLength += fTotalLength;
 
+	// Find the current segment
 	int j = -1;
 	for (int i = 0; i < (int)m_distances.size() - 1; i++) {
 		if (fLength >= m_distances[i] && fLength <= m_distances[i + 1]) {
-			j = i;
+			j = i; // found it!
 			break;
 		}
 	}
@@ -219,6 +221,8 @@ void CCatmullRom::ReadTrackCsv()
 
 		std::getline(ss, val, ',');
 		z = static_cast<float>(stof(val));
+
+		y += 35;
 
 		splinePoint = glm::vec3(x, y, z);
 

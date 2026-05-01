@@ -1,7 +1,5 @@
 #pragma once
 
-#include "./include/glm/gtc/type_ptr.hpp"
-#include "./include/glm/gtc/matrix_transform.hpp"
 #include "Common.h"
 
 struct camData

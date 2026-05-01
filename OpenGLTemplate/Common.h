@@ -6,6 +6,7 @@
 #include <vector>
 #include <sstream>
 #include <unordered_map>
+#include <map>
 #include <functional>
 #include <fstream>
 #include <string>
@@ -15,8 +16,11 @@
 
 #include "./include/glm/gtc/type_ptr.hpp"
 #include "./include/glm/gtc/matrix_transform.hpp"
+#include "./include/glm/gtc/noise.hpp"
 #include "./include/glm/gtx/rotate_vector.hpp"
 #include "./include/glm/gtx/string_cast.hpp"
+#include "./include/glm/gtc/type_ptr.hpp"
+#include "./include/glm/gtc/matrix_transform.hpp"
 
 #include "include/gl/glew.h"
 #include <gl/gl.h>

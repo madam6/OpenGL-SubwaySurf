@@ -167,6 +167,7 @@
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="Texture.h" />
+    <ClInclude Include="TreeMeshComponent.h" />
     <ClInclude Include="VertexBufferObject.h" />
     <ClInclude Include="VertexBufferObjectIndexed.h" />
   </ItemGroup>
@@ -208,6 +209,7 @@
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="TreeMeshComponent.cpp" />
     <ClCompile Include="VertexBufferObject.cpp" />
     <ClCompile Include="VertexBufferObjectIndexed.cpp" />
   </ItemGroup>
@@ -217,6 +219,7 @@
     <None Include="resources\entities.cfg" />
     <None Include="resources\shaders\crystalShader.frag" />
     <None Include="resources\shaders\crystalShader.vert" />
+    <None Include="resources\shaders\instancedTree.vert" />
     <None Include="resources\shaders\light.glsl" />
     <None Include="resources\shaders\mainShader.frag" />
     <None Include="resources\shaders\mainShader.vert" />

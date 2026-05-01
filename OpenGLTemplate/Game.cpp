@@ -127,12 +127,15 @@ void Game::Initialise()
 	m_pAudio->LoadMusicStream("resources\\Audio\\DST-Garote.mp3");
 	m_pAudio->PlayMusicStream();
 
+	m_pSphere = new CSphere();
+	m_pSphere->Create("resources\\textures\\", "dirtpile01.jpg", 25, 25);
+
 	m_pCrystal = std::make_unique<CCrystal>();
 	m_pCrystal->Create("resources\\textures\\", "crystalTexture.jpg");
 
 	m_pHeartIcon = new CPlane();
 	m_pHeartIcon->Create("resources\\textures\\", "heart.png", 40.0f, 40.0f, 1.0f);
-	
+
 	InitShaders();
 
 	std::vector<std::string> entityLines = ReadEntityLines("resources\\entities.cfg");
@@ -160,6 +163,36 @@ void Game::Initialise()
 		m_entities.push_back(EntityParser::Create(currentEntityLines));
 	}
 
+	float noiseScale = 0.01f;
+	float mountainHeight = 50.0f;
+
+	// Trees, displaced using perlin noise similar to what happens in vertex shader
+	for (int i = 0; i < 1000; i++)
+	{
+		float randX = (float(rand() % 20000) / 10.0f) - 1000.0f;
+		float randZ = (float(rand() % 20000) / 10.0f) - 1000.0f;
+
+		glm::vec2 noiseCoords = glm::vec2(randX, randZ) * noiseScale;
+
+		auto newTree = SpawnEntityFromTemplate("Tree");
+		if (newTree)
+		{
+			newTree->SetName("Tree_" + std::to_string(i));
+			newTree->Init();
+
+			if (auto mv = newTree->FindComponent<ModelViewComponent>())
+			{
+				mv->SetPosition(glm::vec3(randX, 0.f, randZ));
+
+				float randScale = 0.01f + (float(rand() % 50) / 1000.0f);
+				mv->SetScale(glm::vec3(randScale));
+
+				float randRot = (float)(rand() % 360);
+				glm::mat4 rotMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(randRot), glm::vec3(0.0f, 1.0f, 0.0f));
+				mv->SetOrientation(rotMatrix);
+			}
+		}
+	}
 
 	for (size_t i = 0; i < m_entities.size(); i++)
 	{
@@ -246,6 +279,39 @@ void Game::Render()
 	pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
 
 
+	// Sun & Pseudo-glow
+	modelViewMatrixStack.Push();
+	modelViewMatrixStack.Translate(glm::vec3(sunPosition));
+	modelViewMatrixStack.Scale(15.0f);
+
+	pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
+	pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
+
+	pMainProgram->SetUniform("bUseTexture", false);
+
+	pMainProgram->SetUniform("material1.Ma", glm::vec3(1.5f, 1.5f, 0.0f));
+	pMainProgram->SetUniform("material1.Md", glm::vec3(0.0f));
+	pMainProgram->SetUniform("material1.Ms", glm::vec3(0.0f));
+
+	m_pSphere->Render();
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glDepthMask(GL_FALSE);
+
+	modelViewMatrixStack.Scale(1.4f);
+	pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
+
+	pMainProgram->SetUniform("material1.Ma", glm::vec3(0.6f, 0.2f, 0.0f));
+	m_pSphere->Render();
+
+	glDepthMask(GL_TRUE);
+	glDisable(GL_BLEND);
+	pMainProgram->SetUniform("bUseTexture", true);
+
+	modelViewMatrixStack.Pop();
+	//
+
 	for (auto& entityPtr : m_entities)
 	{
 		entityPtr->AddRenderData(m_Renderer->m_RenderQueue);
@@ -304,6 +370,7 @@ void Game::InitShaders()
 	sShaderFileNames.push_back("outlineShader.frag");
 	sShaderFileNames.push_back("uiShader.vert");
 	sShaderFileNames.push_back("uiShader.frag");
+	sShaderFileNames.push_back("instancedTree.vert");
 
 	for (int i = 0; i < (int)sShaderFileNames.size(); i++) {
 		std::string sExt = sShaderFileNames[i].substr((int)sShaderFileNames[i].size() - 4, 4);
@@ -369,6 +436,13 @@ void Game::InitShaders()
 	pUiProgram->AddShaderToProgram(&shShaders[13]);
 	pUiProgram->LinkProgram();
 	m_ShaderPrograms["uiShader"] = pUiProgram;
+
+	CShaderProgram* pTreeProgram = new CShaderProgram;
+	pTreeProgram->CreateProgram();
+	pTreeProgram->AddShaderToProgram(&shShaders[14]);
+	pTreeProgram->AddShaderToProgram(&shShaders[1]);
+	pTreeProgram->LinkProgram();
+	m_ShaderPrograms["InstancedTreeShader"] = pTreeProgram;
 }
 
 std::shared_ptr<Entity> Game::FetchEntityByName(const std::string& name)

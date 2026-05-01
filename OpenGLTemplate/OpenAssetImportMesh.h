@@ -126,6 +126,9 @@ private:
         unsigned int MaterialIndex;
     };
 
+    GLuint m_instanceVBO = 0;
+    void RenderInstanced(const std::vector<glm::mat4>& instanceMatrices) override;
+
     float m_animationTime = 0.f;
     float m_animationSpeed = 1.f;
 
