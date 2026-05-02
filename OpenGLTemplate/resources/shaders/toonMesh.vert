@@ -20,8 +20,7 @@ void main()
 
     vEyePosition = modelViewMat * vec4(inPosition, 1.0);
 
-    mat3 normalMatrix = transpose(inverse(mat3(modelViewMat)));
-    vEyeNorm = normalize(normalMatrix * inNormal);
+    vEyeNorm = normalize(mat3(matrices.viewMatrix * instanceModelMatrix) * inNormal);
 
     vTexCoord = inCoord;
     

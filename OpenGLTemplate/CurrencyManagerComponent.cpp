@@ -238,7 +238,10 @@ void CurrencyManagerComponent::AddRenderData(std::vector<RenderData>& renderQueu
             fBatch.isInstanced = true;
             fBatch.instanceMatrices = activeMatrices;
             fBatch.useTexture = true;
-            fBatch.Ma = glm::vec3(1.0f); fBatch.Md = glm::vec3(1.0f); fBatch.Ms = glm::vec3(0.1f); fBatch.shininess = 50.0f;
+            fBatch.Ma = glm::vec3(3.f);
+            fBatch.Md = glm::vec3(1.5f);
+            fBatch.Ms = glm::vec3(0.3f);
+            fBatch.shininess = 50.0f;
             renderQueue.push_back(fBatch);
         }
     }
