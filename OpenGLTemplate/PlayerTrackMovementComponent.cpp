@@ -44,6 +44,17 @@ void PlayerTrackMovementComponent::AddRenderData(std::vector<RenderData>& render
 void PlayerTrackMovementComponent::Update(float dt)
 {
     float dtSeconds = dt / 1000.0f;
+    
+    if (m_IsSpeedBoostActive)
+    {
+        m_SpeedBoostTimer += dt;
+        if (m_SpeedBoostTimer / m_SpeedBoostTimeOut >= 1.0f)
+        {
+            m_IsSpeedBoostActive = false;
+            m_Speed -= m_SpeedBoost;
+            m_SpeedBoostTimer = 0.f;
+        }
+    }
 
     if (m_IsRecovering)
     {
@@ -137,4 +148,14 @@ void PlayerTrackMovementComponent::StartRecovery()
 
     m_StartRecoveryDistance = m_CurrentDistance;
     m_StartRecoveryLaneOffset = m_CurrentLaneOffset;
+}
+
+void PlayerTrackMovementComponent::ApplySpeedBoost(float milliSeconds)
+{
+    if (!m_IsSpeedBoostActive)
+    {
+        m_IsSpeedBoostActive = true;
+        m_SpeedBoostTimeOut = milliSeconds;
+        m_Speed += m_SpeedBoost;
+    }
 }

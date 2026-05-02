@@ -86,6 +86,7 @@ private:
 	CCamera *m_pCamera;
 	CPlane *m_pPlanarTerrain;
 	CPlane* m_pHeartIcon;
+	CPlane* m_pSpeedLinesOverlay;
 	CFreeTypeFont *m_pFtFont;
 	COpenAssetImportMesh *m_pBarrelMesh;
 	COpenAssetImportMesh *m_pHorseMesh;

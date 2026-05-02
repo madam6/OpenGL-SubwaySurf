@@ -42,6 +42,31 @@ void MeshComponent::Init()
 
 void MeshComponent::AddRenderData(std::vector<RenderData>& renderQueue)
 {
+	if (m_ShaderComponentRef && m_ShaderComponentRef->GetShaderName() == "toonMesh")
+	{
+		RenderData outlineData;
+		outlineData.mesh = m_Mesh;
+		outlineData.useTexture = false;
+		outlineData.isOutline = true;
+		outlineData.modelMatrix = glm::mat4(1.0f);
+
+		if (m_ModelViewComponentRef)
+		{
+			outlineData.modelMatrix = glm::translate(outlineData.modelMatrix, m_ModelViewComponentRef->GetPosition());
+			outlineData.modelMatrix *= m_ModelViewComponentRef->GetOrientation();
+			outlineData.modelMatrix = glm::scale(outlineData.modelMatrix, m_ModelViewComponentRef->GetScale() * 1.05f);
+		}
+
+		outlineData.shader = Game::GetInstance().GetShader("outlineMeshShader");
+
+		if (auto ptMv = GetOwner()->FindComponent<PlayerTrackMovementComponent>())
+		{
+			outlineData.isRecovering = ptMv->IsRecovering();
+		}
+
+		renderQueue.push_back(std::move(outlineData));
+	}
+
 	RenderData data;
 	data.mesh = m_Mesh;
 	data.useTexture = true;

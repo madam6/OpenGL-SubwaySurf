@@ -43,6 +43,7 @@ Source code drawn from a number of sources and examples, including contributions
 #include "Plane.h"
 #include "Shaders.h"
 #include "FreeTypeFont.h"
+#include "PlayerTrackMovementComponent.h"
 #include "Sphere.h"
 #include "MatrixStack.h"
 #include "OpenAssetImportMesh.h"
@@ -85,6 +86,7 @@ Game::~Game()
 	delete m_pSphere;
 	delete m_pAudio;
 	delete m_pHeartIcon;
+	delete m_pSpeedLinesOverlay;
 
 	for (auto& [name, pointer] : m_ShaderPrograms)
 	{
@@ -135,6 +137,9 @@ void Game::Initialise()
 
 	m_pHeartIcon = new CPlane();
 	m_pHeartIcon->Create("resources\\textures\\", "heart.png", 40.0f, 40.0f, 1.0f);
+
+	m_pSpeedLinesOverlay = new CPlane();
+	m_pSpeedLinesOverlay->Create("resources\\textures\\", "SpeedLines.png", 1.0f, 1.0f, 1.0f);
 
 	InitShaders();
 
@@ -371,6 +376,9 @@ void Game::InitShaders()
 	sShaderFileNames.push_back("uiShader.vert");
 	sShaderFileNames.push_back("uiShader.frag");
 	sShaderFileNames.push_back("instancedTree.vert");
+	sShaderFileNames.push_back("toonMesh.vert");
+	sShaderFileNames.push_back("toonMesh.frag");
+	sShaderFileNames.push_back("outlineMesh.vert");
 
 	for (int i = 0; i < (int)sShaderFileNames.size(); i++) {
 		std::string sExt = sShaderFileNames[i].substr((int)sShaderFileNames[i].size() - 4, 4);
@@ -443,6 +451,20 @@ void Game::InitShaders()
 	pTreeProgram->AddShaderToProgram(&shShaders[1]);
 	pTreeProgram->LinkProgram();
 	m_ShaderPrograms["InstancedTreeShader"] = pTreeProgram;
+
+	CShaderProgram* pToonMeshProgram = new CShaderProgram;
+	pToonMeshProgram->CreateProgram();
+	pToonMeshProgram->AddShaderToProgram(&shShaders[15]);
+	pToonMeshProgram->AddShaderToProgram(&shShaders[16]);
+	pToonMeshProgram->LinkProgram();
+	m_ShaderPrograms["toonMesh"] = pToonMeshProgram;
+
+	CShaderProgram* pOutlineMeshProgram = new CShaderProgram;
+	pOutlineMeshProgram->CreateProgram();
+	pOutlineMeshProgram->AddShaderToProgram(&shShaders[17]);
+	pOutlineMeshProgram->AddShaderToProgram(&shShaders[11]);
+	pOutlineMeshProgram->LinkProgram();
+	m_ShaderPrograms["outlineMeshShader"] = pOutlineMeshProgram;
 }
 
 std::shared_ptr<Entity> Game::FetchEntityByName(const std::string& name)
@@ -505,6 +527,28 @@ void Game::Update()
 	{
 		m_entities[i]->Update(m_dt);
 	}
+
+	float targetFOV = 60.0f;
+
+	if (auto mc = FetchEntityByName("MC"))
+	{
+		if (std::shared_ptr<PlayerTrackMovementComponent> playerMov = mc->FindComponent<PlayerTrackMovementComponent>())
+		{
+			if (playerMov->IsSpeedBoostActive())
+			{
+				targetFOV = 75.0f;
+			}
+		}
+	}
+
+	static float currentFOV = 45.0f;
+	currentFOV += (targetFOV - currentFOV) * 0.1f;
+
+	RECT dimensions = m_gameWindow.GetDimensions();
+	int width = dimensions.right - dimensions.left;
+	int height = dimensions.bottom - dimensions.top;
+
+	m_pCamera->SetPerspectiveProjectionMatrix(glm::radians(currentFOV), (float)width / (float)height, 0.5f, 5000.0f);
 
 	std::vector<ColliderComponent*> colliders;
 	for (size_t i = 0; i < m_entities.size(); i++)
@@ -648,6 +692,34 @@ void Game::DisplayHUD()
 
 	pUiProgram->SetUniform("projMatrix", hudOrtho);
 	pUiProgram->SetUniform("sampler0", 0);
+
+	bool isBoosting = false;
+	if (auto mc = FetchEntityByName("MC"))
+	{
+		if (auto playerMov = mc->FindComponent<PlayerTrackMovementComponent>())
+		{
+			isBoosting = playerMov->IsSpeedBoostActive();
+		}
+	}
+
+	if (isBoosting)
+	{
+		pUiProgram->UseProgram();
+
+		glm::mat4 overlayModel = glm::translate(glm::mat4(1.0f), glm::vec3(width / 2.0f, height / 2.0f, 0.0f));
+		overlayModel = glm::scale(overlayModel, glm::vec3((float)width, (float)height, 1.0f));
+
+		overlayModel = glm::rotate(overlayModel, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+		pUiProgram->SetUniform("modelMatrix", overlayModel);
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		m_pSpeedLinesOverlay->Render();
+
+		glDisable(GL_BLEND);
+	}
 
 	for (int i = 0; i < health; i++)
 	{

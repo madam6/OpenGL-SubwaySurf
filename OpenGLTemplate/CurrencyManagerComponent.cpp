@@ -6,10 +6,13 @@
 #include "ComponentRegistry.h"
 #include "MaterialComponent.h"
 #include "Crystal.h"
+#include "OpenAssetImportMesh.h"
 #include "Camera.h"
 
 std::shared_ptr<CCrystal> CurrencyManagerComponent::s_SharedCrystal = nullptr;
 std::shared_ptr<CHeart> CurrencyManagerComponent::s_SharedHeart = nullptr;
+std::shared_ptr<COpenAssetImportMesh> CurrencyManagerComponent::s_SharedFence = nullptr;
+std::shared_ptr<COpenAssetImportMesh> CurrencyManagerComponent::s_SharedBanana = nullptr;
 
 namespace
 {
@@ -83,15 +86,36 @@ void CurrencyManagerComponent::Init()
         }
     }
 
+    for (int i = 0; i < m_MaxBananas; i++)
+    {
+        auto newBanana = Game::GetInstance().SpawnEntityFromTemplate(m_BananaBaseName);
+        if (newBanana)
+        {
+            newBanana->SetName(m_BananaBaseName + "_" + std::to_string(i));
+            newBanana->Init();
+            m_Bananas.push_back(newBanana->FindComponent<CollectibleComponent>());
+        }
+    }
+
     if (!s_SharedHeart)
     {
         s_SharedHeart = std::make_shared<CHeart>();
         s_SharedHeart->Create("resources\\textures\\", "crystalTexture.jpg");
     }
 
-    RespawnAll();
+    if (!s_SharedFence)
+    {
+        s_SharedFence = std::make_shared<COpenAssetImportMesh>();
+        s_SharedFence->LoadFBX("resources\\models\\Fence\\source\\stone_fence_old_low.fbx");
+    }
 
-   
+    if (!s_SharedBanana)
+    {
+        s_SharedBanana = std::make_shared<COpenAssetImportMesh>();
+        s_SharedBanana->LoadFBX("resources\\models\\Banana\\BananaLow.fbx");
+    }
+
+    RespawnAll();
 }
 
 void CurrencyManagerComponent::Update(float dt)
@@ -114,28 +138,40 @@ void CurrencyManagerComponent::Update(float dt)
 
 void CurrencyManagerComponent::AddRenderData(std::vector<RenderData>& renderQueue)
 {
-    if (m_Crystals.empty() || !s_SharedCrystal) return;
-
-    std::vector<glm::mat4> activeMatrices;
-    for (auto& crystal : m_Crystals)
+    // Crystals
+    if (!m_Crystals.empty() && s_SharedCrystal)
     {
-        if (crystal && !crystal->IsCollected())
+        std::vector<glm::mat4> activeMatrices;
+        for (auto& crystal : m_Crystals)
         {
-            auto mv = crystal->GetOwner()->FindComponent<ModelViewComponent>();
-            if (mv) 
+            if (crystal && !crystal->IsCollected())
             {
-                glm::mat4 model = glm::translate(glm::mat4(1.0f), mv->GetPosition());
-                model *= mv->GetOrientation();
-                model = glm::scale(model, mv->GetScale());
-                activeMatrices.push_back(model);
+                auto mv = crystal->GetOwner()->FindComponent<ModelViewComponent>();
+                if (mv)
+                {
+                    glm::mat4 model = glm::translate(glm::mat4(1.0f), mv->GetPosition());
+                    model *= mv->GetOrientation();
+                    model = glm::scale(model, mv->GetScale());
+                    activeMatrices.push_back(model);
+                }
             }
+        }
+        if (!activeMatrices.empty())
+        {
+            RenderData batch;
+            batch.mesh = s_SharedCrystal;
+            batch.shader = Game::GetInstance().GetShader("CrystalShader");
+            batch.isInstanced = true;
+            batch.instanceMatrices = activeMatrices;
+            batch.useTexture = true;
+            renderQueue.push_back(batch);
         }
     }
 
+    // Hearts
     if (!m_Hearts.empty() && s_SharedHeart)
     {
-        std::vector<glm::mat4> activeHeartMatrices;
-
+        std::vector<glm::mat4> activeMatrices;
         glm::vec3 matAm(1), matDi(1), matSp(0); float matSh = 1;
 
         for (auto& heart : m_Hearts)
@@ -149,53 +185,102 @@ void CurrencyManagerComponent::AddRenderData(std::vector<RenderData>& renderQueu
                     glm::mat4 model = glm::translate(glm::mat4(1.0f), mv->GetPosition());
                     model *= mv->GetOrientation();
                     model = glm::scale(model, mv->GetScale());
-                    activeHeartMatrices.push_back(model);
+                    activeMatrices.push_back(model);
                 }
-
                 auto mat = owner->FindComponent<MaterialComponent>();
-                if (mat)
-                {
-                    matAm = mat->GetMa(); matDi = mat->GetMd();
-                    matSp = mat->GetMs(); matSh = mat->GetShiny();
-                }
+                if (mat) { matAm = mat->GetMa(); matDi = mat->GetMd(); matSp = mat->GetMs(); matSh = mat->GetShiny(); }
             }
         }
-
-        if (!activeHeartMatrices.empty())
+        if (!activeMatrices.empty())
         {
             RenderData outlineBatch;
             outlineBatch.mesh = s_SharedHeart;
             outlineBatch.shader = Game::GetInstance().GetShader("outlineShader");
             outlineBatch.isInstanced = true;
-            outlineBatch.instanceMatrices = activeHeartMatrices;
+            outlineBatch.instanceMatrices = activeMatrices;
             outlineBatch.isOutline = true;
             renderQueue.push_back(outlineBatch);
 
             RenderData hBatch;
             hBatch.mesh = s_SharedHeart;
-            // TODO: Get shader from components?
             hBatch.shader = Game::GetInstance().GetShader("toonShader");
             hBatch.isInstanced = true;
-            hBatch.instanceMatrices = activeHeartMatrices;
+            hBatch.instanceMatrices = activeMatrices;
             hBatch.useTexture = false;
-            hBatch.Ma = matAm;
-            hBatch.Md = matDi;
-            hBatch.Ms = matSp;
-            hBatch.shininess = matSh;
+            hBatch.Ma = matAm; hBatch.Md = matDi; hBatch.Ms = matSp; hBatch.shininess = matSh;
             renderQueue.push_back(hBatch);
         }
     }
-    if (activeMatrices.empty()) return;
 
-    RenderData batch;
-    batch.mesh = s_SharedCrystal;
-    // TODO: Get shader from components?
-    batch.shader = Game::GetInstance().GetShader("CrystalShader");
-    batch.isInstanced = true;
-    batch.instanceMatrices = activeMatrices;
-    batch.useTexture = true;
+    // Fences
+    if (!m_Fences.empty() && s_SharedFence)
+    {
+        std::vector<glm::mat4> activeMatrices;
+        for (auto& fence : m_Fences)
+        {
+            if (fence && !fence->IsCollected())
+            {
+                auto mv = fence->GetOwner()->FindComponent<ModelViewComponent>();
+                if (mv)
+                {
+                    glm::mat4 model = glm::translate(glm::mat4(1.0f), mv->GetPosition());
+                    model *= mv->GetOrientation();
+                    model = glm::scale(model, mv->GetScale());
+                    activeMatrices.push_back(model);
+                }
+            }
+        }
+        if (!activeMatrices.empty())
+        {
+            RenderData fBatch;
+            fBatch.mesh = s_SharedFence;
+            fBatch.shader = Game::GetInstance().GetShader("toonMesh");
+            fBatch.isInstanced = true;
+            fBatch.instanceMatrices = activeMatrices;
+            fBatch.useTexture = true;
+            fBatch.Ma = glm::vec3(1.0f); fBatch.Md = glm::vec3(1.0f); fBatch.Ms = glm::vec3(0.1f); fBatch.shininess = 50.0f;
+            renderQueue.push_back(fBatch);
+        }
+    }
 
-    renderQueue.push_back(batch);
+    // Bananas
+    if (!m_Bananas.empty() && s_SharedBanana)
+    {
+        std::vector<glm::mat4> activeMatrices;
+        for (auto& banana : m_Bananas)
+        {
+            if (banana && !banana->IsCollected())
+            {
+                auto mv = banana->GetOwner()->FindComponent<ModelViewComponent>();
+                if (mv)
+                {
+                    glm::mat4 model = glm::translate(glm::mat4(1.0f), mv->GetPosition());
+                    model *= mv->GetOrientation();
+                    model = glm::scale(model, mv->GetScale());
+                    activeMatrices.push_back(model);
+                }
+            }
+        }
+        if (!activeMatrices.empty())
+        {
+            RenderData outlineBatch;
+            outlineBatch.mesh = s_SharedBanana;
+            outlineBatch.shader = Game::GetInstance().GetShader("outlineMeshShader");
+            outlineBatch.isInstanced = true;
+            outlineBatch.instanceMatrices = activeMatrices;
+            outlineBatch.isOutline = true;
+            renderQueue.push_back(outlineBatch);
+
+            RenderData bBatch;
+            bBatch.mesh = s_SharedBanana;
+            bBatch.shader = Game::GetInstance().GetShader("toonMesh");
+            bBatch.isInstanced = true;
+            bBatch.instanceMatrices = activeMatrices;
+            bBatch.useTexture = true;
+            bBatch.Ma = glm::vec3(1.0f); bBatch.Md = glm::vec3(1.0f); bBatch.Ms = glm::vec3(0.8f); bBatch.shininess = 16.0f;
+            renderQueue.push_back(bBatch);
+        }
+    }
 }
 
 void CurrencyManagerComponent::RespawnAll()
@@ -203,11 +288,13 @@ void CurrencyManagerComponent::RespawnAll()
     for (auto& crystal : m_Crystals) crystal->Collect();
     for (auto& heart : m_Hearts) heart->Collect();
     for (auto& fence : m_Fences) fence->Collect();
+    for (auto& banana : m_Bananas) banana->Collect();
 
     int numBatches = m_MinBatches + (rand() % (m_MaxBatches - m_MinBatches + 1));
     int crystalIndex = 0;
     int heartIndex = 0;
     int fenceIndex = 0;
+    int bananaIndex = 0;
 
     float currentBatchDist = m_PlayerRef->GetCurrentDistance() + 50.0f + (rand() % 50);
 
@@ -283,6 +370,29 @@ void CurrencyManagerComponent::RespawnAll()
             fenceIndex++;
         }
 
+        if (bananaIndex < m_Bananas.size() && (rand() % 100 < 90))
+        {
+            float fenceDist = currentBatchDist + 200.0f;
+            int bananaLane = (rand() % 3) - 1;
+
+            glm::vec3 p, up, forwardVec;
+            m_TrackRef->Sample(fenceDist, p, up);
+            m_TrackRef->Sample(fenceDist + 1.0f, forwardVec);
+
+            glm::vec3 forward = glm::normalize(forwardVec - p);
+            glm::vec3 safeUp = glm::length(up) < 0.001f ? glm::vec3(0.0f, 1.0f, 0.0f) : up;
+            glm::vec3 right = glm::normalize(glm::cross(forward, safeUp));
+            glm::vec3 realUp = glm::normalize(glm::cross(right, forward));
+
+            glm::vec3 finalPos = p + (right * (bananaLane * 10.0f)) + (realUp * 3.9f);
+
+            glm::mat4 orientation = glm::mat4(glm::vec4(right, 0.0f), glm::vec4(realUp, 0.0f), glm::vec4(forward, 0.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+            orientation = glm::rotate(orientation, glm::radians(270.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+            m_Bananas[bananaIndex]->SpawnAt(finalPos, orientation);
+            bananaIndex++;
+        }
+
         currentBatchDist += 150.0f + (rand() % 101);
     }
 }
@@ -298,14 +408,16 @@ void CurrencyManagerComponent::OnEvent(const std::string& eventName, const Event
         if (payload.entityA->GetName() == "MC" &&
             (payload.entityB->GetName().find(m_CurrencyBaseName) != std::string::npos ||
                 payload.entityB->GetName().find(m_HeartBaseName) != std::string::npos ||
-                payload.entityB->GetName().find(m_FenceBaseName) != std::string::npos))
+                payload.entityB->GetName().find(m_FenceBaseName) != std::string::npos || 
+                payload.entityB->GetName().find(m_BananaBaseName) != std::string::npos))
         {
             hitItem = payload.entityB;
         }
         else if (payload.entityB->GetName() == "MC" &&
             (payload.entityA->GetName().find(m_CurrencyBaseName) != std::string::npos ||
                 payload.entityA->GetName().find(m_HeartBaseName) != std::string::npos ||
-                payload.entityA->GetName().find(m_FenceBaseName) != std::string::npos))
+                payload.entityA->GetName().find(m_FenceBaseName) != std::string::npos ||
+                payload.entityA->GetName().find(m_BananaBaseName) != std::string::npos))
         {
             hitItem = payload.entityA;
         }
@@ -336,6 +448,11 @@ void CurrencyManagerComponent::OnEvent(const std::string& eventName, const Event
                     m_Health -= 1;
                     DEBUG_MSG("Hit a Fence! Lost a heart! Health: %d", m_Health);
                     if (m_PlayerRef) m_PlayerRef->StartRecovery();
+                }
+                else if (hitItem->GetName().find(m_BananaBaseName) != std::string::npos)
+                {
+                    DEBUG_MSG("Hit a Banana! Speed up");
+                    if (m_PlayerRef) m_PlayerRef->ApplySpeedBoost(3000.f);
                 }
             }
         }

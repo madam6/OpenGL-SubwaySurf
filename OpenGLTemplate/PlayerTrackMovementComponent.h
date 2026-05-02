@@ -17,8 +17,10 @@ class PlayerTrackMovementComponent : public Component, public IObserver
 public:
 	void Apply(const PropertyMap& props);
 	void StartRecovery();
+	void ApplySpeedBoost(float milliSeconds);
 	bool IsRecovering() const { return m_IsRecovering; }
 	float GetCurrentDistance() const { return m_CurrentDistance; }
+	bool IsSpeedBoostActive() const { return m_IsSpeedBoostActive; }
 	~PlayerTrackMovementComponent()
 	{
 		EventSystem::Instance().Unsubscribe("KeyDown", this);
@@ -38,6 +40,11 @@ private:
 	float m_RecordedLaneOffset = 0.0f;
 
 	bool m_IsRecovering = false;
+	bool m_IsSpeedBoostActive = false;
+	float m_SpeedBoostTimer = 0.0f;
+	float m_SpeedBoostTimeOut = 0.0f;
+	float m_SpeedBoost = 0.1f;
+
 	float m_RecoveryTimer = 0.0f;
 	float m_RecoveryDuration = 1.f;
 	float m_StartRecoveryDistance = 0.0f;

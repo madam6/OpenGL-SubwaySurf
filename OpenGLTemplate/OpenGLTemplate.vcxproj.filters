@@ -333,5 +333,14 @@
     <None Include="resources\shaders\instancedTree.vert">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="resources\shaders\toonMesh.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\toonMesh.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\outlineMesh.vert">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

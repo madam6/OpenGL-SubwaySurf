@@ -133,5 +133,8 @@ void Renderer::Render(const FrameData& frameData)
         renderable.mesh->RenderInstanced(renderable.instanceMatrices);
     }
 
+    glDisable(GL_CULL_FACE);
+    glFrontFace(GL_CCW);
+
     m_RenderQueue.clear();
 }

@@ -36,6 +36,13 @@ private:
     std::string m_FenceBaseName = "Fence";
     int m_MaxFences = 15;
 
+    std::vector<std::shared_ptr<CollectibleComponent>> m_Bananas;
+    std::string m_BananaBaseName = "Banana";
+    int m_MaxBananas = 15;
+
+    static std::shared_ptr<COpenAssetImportMesh> s_SharedFence;
+    static std::shared_ptr<COpenAssetImportMesh> s_SharedBanana;
+
     int m_CurrentLap = 0;
     int m_Score = 0;
     int m_MinBatches = 2;

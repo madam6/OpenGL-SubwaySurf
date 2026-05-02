@@ -54,7 +54,7 @@ void COpenAssetImportMesh::MeshEntry::Init(const std::vector<Vertex>& Vertices,
 
 bool COpenAssetImportMesh::LoadFBX(const std::string& filename)
 {
-    m_Scene = m_Importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_LimitBoneWeights);
+    m_Scene = m_Importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_LimitBoneWeights | aiProcess_GenSmoothNormals);
 
     if (!m_Scene || !m_Scene->mRootNode)
     {
@@ -418,10 +418,14 @@ bool COpenAssetImportMesh::InitMaterials(const aiScene* pScene, const std::strin
             {
                 fallbackTexture = Dir + "\\Palm_Tree_1_Plam_Tree_AlbedoTransparency.png";
             }
-            else
+            else if (Dir.find("Fence") != std::string::npos)
             {
                 // Fence hack
                 fallbackTexture = Dir + "\\stone_fence_old_low_rock_BaseColor.png";
+            }
+            else
+            {
+                fallbackTexture = Dir + "\\BananaLow_Banana_AlbedoTransparency.png";
             }
 
             m_Textures[i] = new CTexture();
