@@ -152,6 +152,9 @@
     <ClInclude Include="TreeMeshComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FrameBufferObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Audio.cpp">
@@ -274,6 +277,9 @@
     <ClCompile Include="TreeMeshComponent.cpp">
       <Filter>Source Files\ECS\Components</Filter>
     </ClCompile>
+    <ClCompile Include="FrameBufferObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\mainShader.frag">
@@ -286,12 +292,6 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="resources\shaders\textShader.vert">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="crystalShader.frag">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="crystalShader.vert">
       <Filter>Shaders</Filter>
     </None>
     <None Include="resources\entities.cfg">

@@ -9,9 +9,14 @@ out vec4 vOutputColour;
 
 const float levels = 3.0;
 const float scaleFactor = 1.0 / levels;
-
+uniform bool bIsDepthPass;
 void main()
 {
+    if (bIsDepthPass)
+    {
+        vOutputColour = vec4(1.0);
+        return;
+    }
     vec3 n = normalize(vEyeNorm);
     vec3 v = normalize(-vEyePosition.xyz);
     

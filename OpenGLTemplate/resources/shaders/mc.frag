@@ -10,9 +10,14 @@ uniform sampler2D sampler0;
 uniform int uIsRecovering; 
 uniform float uTime;
 #include "light.glsl"
-
+uniform bool bIsDepthPass;
 void main()
 {
+    if (bIsDepthPass)
+    {
+        vOutputColour = vec4(1.0);
+        return;
+    }
     vec4 texColour = texture(sampler0, vTexCoord);
 
     vec3 n = normalize(vNormal);

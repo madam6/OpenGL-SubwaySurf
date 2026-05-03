@@ -34,6 +34,7 @@ void Renderer::Render(const FrameData& frameData)
             shader->SetUniform("matrices.projMatrix", frameData.projMatrix);
             shader->SetUniform("matrices.viewMatrix", frameData.viewMatrix);
             shader->SetUniform("numLights", (int)frameData.lights.size());
+            shader->SetUniform("bIsDepthPass", frameData.isDepthPass);
 
             for (int i = 0; i < frameData.lights.size(); i++)
             {
@@ -99,7 +100,7 @@ void Renderer::Render(const FrameData& frameData)
         shader->SetUniform("matrices.projMatrix", frameData.projMatrix);
         shader->SetUniform("matrices.viewMatrix", frameData.viewMatrix);
         shader->SetUniform("numLights", (int)frameData.lights.size());
-
+        shader->SetUniform("bIsDepthPass", frameData.isDepthPass ? 1 : 0);
         for (int i = 0; i < frameData.lights.size(); i++)
         {
             std::string base = "lights[" + std::to_string(i) + "]";

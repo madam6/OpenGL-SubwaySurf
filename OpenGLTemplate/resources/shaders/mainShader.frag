@@ -17,11 +17,15 @@ uniform bool bUseTexture;    // A flag indicating if texture-mapping should be a
 uniform bool renderSkybox;
 uniform bool isTerrain;
 in vec3 worldPosition;
-
+uniform bool bIsDepthPass;
 
 void main()
 {
-
+	if (bIsDepthPass)
+	{
+		vOutputColour = vec4(1.0);
+		return;
+	}
 
 	if (renderSkybox) {
 		vOutputColour = texture(CubeMapTex, worldPosition);

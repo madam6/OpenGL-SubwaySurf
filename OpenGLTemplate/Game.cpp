@@ -49,6 +49,7 @@ Source code drawn from a number of sources and examples, including contributions
 #include "OpenAssetImportMesh.h"
 #include "Audio.h"
 #include "CurrencyManagerComponent.h"
+#include "FrameBufferObject.h"
 #include <iostream>
 
 // Constructor
@@ -63,6 +64,7 @@ Game::Game()
 	m_pSphere = NULL;
 	m_pHighResolutionTimer = NULL;
 	m_pAudio = NULL;
+	m_DepthBuffer = nullptr;
 
 	m_dt = 0.0;
 	m_framesPerSecond = 0;
@@ -87,6 +89,8 @@ Game::~Game()
 	delete m_pAudio;
 	delete m_pHeartIcon;
 	delete m_pSpeedLinesOverlay;
+	m_DepthBuffer->Release();
+	delete m_DepthBuffer;
 
 	for (auto& [name, pointer] : m_ShaderPrograms)
 	{
@@ -110,6 +114,8 @@ void Game::Initialise()
 	m_pFtFont = new CFreeTypeFont;
 	m_pAudio = new CAudio;
 	m_Renderer = std::make_unique<Renderer>();
+	m_DepthBuffer = new CFrameBufferObject;
+	m_DepthBuffer->Create(1920, 1080);
 
 	RECT dimensions = m_gameWindow.GetDimensions();
 	int width = dimensions.right - dimensions.left;
@@ -205,59 +211,87 @@ void Game::Initialise()
 	}
 }
 
-void Game::Render()
+void Game::Render(bool depthPass)
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_DEPTH_TEST);
+	glm::vec4 lightPosition1 = glm::vec4(-100, 100, -100, 1);
+	glm::vec4 sunPosition = glm::vec4(200, 300, -400, 1);
 
-	glutil::MatrixStack modelViewMatrixStack;
-	modelViewMatrixStack.SetIdentity();
+	if (depthPass)
+	{
+		m_DepthBuffer->Bind(true);
+	}
+	else
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		RECT dimensions = m_gameWindow.GetDimensions();
+		glViewport(0, 0, dimensions.right - dimensions.left, dimensions.bottom - dimensions.top);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
+	}
+
+	glm::mat4 viewMatrix;
+	glm::mat4 projMatrix;
+
+	if (depthPass)
+	{
+		projMatrix = glm::ortho(-1000.0f, 1000.0f, -1000.0f, 1000.0f, 1.0f, 2500.0f);
+		viewMatrix = glm::lookAt(glm::vec3(sunPosition), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	}
+	else
+	{
+		projMatrix = *m_pCamera->GetPerspectiveProjectionMatrix();
+		viewMatrix = m_pCamera->GetViewMatrix();
+	}
 
 	CShaderProgram* pMainProgram = GetShader("MainShader");
 	pMainProgram->UseProgram();
 	pMainProgram->SetUniform("bUseTexture", true);
 	pMainProgram->SetUniform("sampler0", 0);
+	pMainProgram->SetUniform("matrices.projMatrix", projMatrix);
+	pMainProgram->SetUniform("bIsDepthPass", depthPass ? 1 : 0);
 
-	int cubeMapTextureUnit = 10;
-	pMainProgram->SetUniform("CubeMapTex", cubeMapTextureUnit);
+	if (!depthPass)
+	{
+		int cubeMapTextureUnit = 10;
+		pMainProgram->SetUniform("CubeMapTex", cubeMapTextureUnit);
 
-	pMainProgram->SetUniform("matrices.projMatrix", m_pCamera->GetPerspectiveProjectionMatrix());
+		int shadowMapTextureUnit = 11;
+		m_DepthBuffer->BindDepth(shadowMapTextureUnit);
+		pMainProgram->SetUniform("shadowMap", shadowMapTextureUnit);
 
-	modelViewMatrixStack.LookAt(m_pCamera->GetPosition(), m_pCamera->GetView(), m_pCamera->GetUpVector());
-	glm::mat4 viewMatrix = modelViewMatrixStack.Top();
+		pMainProgram->SetUniform("numLights", 2);
+		pMainProgram->SetUniform("lights[0].position", viewMatrix * lightPosition1);
+		pMainProgram->SetUniform("lights[0].La", glm::vec3(0.7f));
+		pMainProgram->SetUniform("lights[0].Ld", glm::vec3(0.5f));
+		pMainProgram->SetUniform("lights[0].Ls", glm::vec3(0.5f));
 
-	pMainProgram->SetUniform("numLights", 2);
-
-	glm::vec4 lightPosition1 = glm::vec4(-100, 100, -100, 1);
-	glm::vec4 sunPosition = glm::vec4(200, 300, -400, 1);
-
-	pMainProgram->SetUniform("lights[0].position", viewMatrix * lightPosition1);
-	pMainProgram->SetUniform("lights[0].La", glm::vec3(0.7f));
-	pMainProgram->SetUniform("lights[0].Ld", glm::vec3(0.5f));
-	pMainProgram->SetUniform("lights[0].Ls", glm::vec3(0.5f));
-
-	pMainProgram->SetUniform("lights[1].position", viewMatrix * sunPosition);
-	pMainProgram->SetUniform("lights[1].La", glm::vec3(0.0f, 0.0f, 0.0f));
-	pMainProgram->SetUniform("lights[1].Ld", glm::vec3(0.6f, 0.6f, 0.2f));
-	pMainProgram->SetUniform("lights[1].Ls", glm::vec3(0.8f, 0.8f, 0.2f));
+		pMainProgram->SetUniform("lights[1].position", viewMatrix * sunPosition);
+		pMainProgram->SetUniform("lights[1].La", glm::vec3(0.0f, 0.0f, 0.0f));
+		pMainProgram->SetUniform("lights[1].Ld", glm::vec3(0.6f, 0.6f, 0.2f));
+		pMainProgram->SetUniform("lights[1].Ls", glm::vec3(0.8f, 0.8f, 0.2f));
+	}
 
 	pMainProgram->SetUniform("material1.Ma", glm::vec3(1.0f));
 	pMainProgram->SetUniform("material1.Md", glm::vec3(0.0f));
 	pMainProgram->SetUniform("material1.Ms", glm::vec3(0.0f));
 	pMainProgram->SetUniform("material1.shininess", 15.0f);
 
+	glutil::MatrixStack modelViewMatrixStack;
+	modelViewMatrixStack.SetIdentity();
+	modelViewMatrixStack.ApplyMatrix(viewMatrix);
 
-	modelViewMatrixStack.Push();
-	pMainProgram->SetUniform("renderSkybox", true);
-
-	glm::vec3 vEye = m_pCamera->GetPosition();
-	modelViewMatrixStack.Translate(vEye);
-	pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
-	pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
-	m_pSkybox->Render(cubeMapTextureUnit);
-	pMainProgram->SetUniform("renderSkybox", false);
-	modelViewMatrixStack.Pop();
-
+	if (!depthPass)
+	{
+		modelViewMatrixStack.Push();
+		pMainProgram->SetUniform("renderSkybox", true);
+		glm::vec3 vEye = m_pCamera->GetPosition();
+		modelViewMatrixStack.Translate(vEye);
+		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
+		pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
+		m_pSkybox->Render(10);
+		pMainProgram->SetUniform("renderSkybox", false);
+		modelViewMatrixStack.Pop();
+	}
 
 	modelViewMatrixStack.Push();
 	pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
@@ -273,49 +307,43 @@ void Game::Render()
 	pMainProgram->SetUniform("isTerrain", false);
 	modelViewMatrixStack.Pop();
 
-
 	pMainProgram->SetUniform("material1.Ma", glm::vec3(0.5f));
 	pMainProgram->SetUniform("material1.Md", glm::vec3(0.5f));
 	pMainProgram->SetUniform("material1.Ms", glm::vec3(1.0f));
 
-	modelViewMatrixStack.Push();
+	if (!depthPass)
+	{
+		modelViewMatrixStack.Push();
+		modelViewMatrixStack.Translate(glm::vec3(sunPosition));
+		modelViewMatrixStack.Scale(15.0f);
 
-	pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
-	pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
+		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
+		pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
 
+		pMainProgram->SetUniform("bUseTexture", false);
 
-	// Sun & Pseudo-glow
-	modelViewMatrixStack.Push();
-	modelViewMatrixStack.Translate(glm::vec3(sunPosition));
-	modelViewMatrixStack.Scale(15.0f);
+		pMainProgram->SetUniform("material1.Ma", glm::vec3(1.5f, 1.5f, 0.0f));
+		pMainProgram->SetUniform("material1.Md", glm::vec3(0.0f));
+		pMainProgram->SetUniform("material1.Ms", glm::vec3(0.0f));
 
-	pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
-	pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
+		m_pSphere->Render();
 
-	pMainProgram->SetUniform("bUseTexture", false);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		glDepthMask(GL_FALSE);
 
-	pMainProgram->SetUniform("material1.Ma", glm::vec3(1.5f, 1.5f, 0.0f));
-	pMainProgram->SetUniform("material1.Md", glm::vec3(0.0f));
-	pMainProgram->SetUniform("material1.Ms", glm::vec3(0.0f));
+		modelViewMatrixStack.Scale(1.4f);
+		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 
-	m_pSphere->Render();
+		pMainProgram->SetUniform("material1.Ma", glm::vec3(0.6f, 0.2f, 0.0f));
+		m_pSphere->Render();
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	glDepthMask(GL_FALSE);
+		glDepthMask(GL_TRUE);
+		glDisable(GL_BLEND);
+		pMainProgram->SetUniform("bUseTexture", true);
 
-	modelViewMatrixStack.Scale(1.4f);
-	pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
-
-	pMainProgram->SetUniform("material1.Ma", glm::vec3(0.6f, 0.2f, 0.0f));
-	m_pSphere->Render();
-
-	glDepthMask(GL_TRUE);
-	glDisable(GL_BLEND);
-	pMainProgram->SetUniform("bUseTexture", true);
-
-	modelViewMatrixStack.Pop();
-	//
+		modelViewMatrixStack.Pop();
+	}
 
 	for (auto& entityPtr : m_entities)
 	{
@@ -324,7 +352,7 @@ void Game::Render()
 
 	FrameData frameData;
 
-	frameData.projMatrix = *m_pCamera->GetPerspectiveProjectionMatrix();
+	frameData.projMatrix = projMatrix;
 	frameData.viewMatrix = viewMatrix;
 	frameData.cameraPosition = m_pCamera->GetPosition();
 
@@ -346,14 +374,16 @@ void Game::Render()
 	s_totalTime += (float)(m_dt / 1000.0);
 	frameData.time = s_totalTime;
 
+	frameData.isDepthPass = depthPass;
+
 	m_Renderer->Render(frameData);
 
-	modelViewMatrixStack.Pop();
-
-	DisplayFrameRate();
-	DisplayHUD();
-
-	SwapBuffers(m_gameWindow.Hdc());
+	if (!depthPass)
+	{
+		DisplayFrameRate();
+		DisplayHUD();
+		SwapBuffers(m_gameWindow.Hdc());
+	}
 }
 
 void Game::InitShaders()
@@ -787,10 +817,9 @@ void Game::GameLoop()
 	// Variable timer
 	m_pHighResolutionTimer->Start();
 	Update();
-	Render();
+	Render(true);
+	Render(false);
 	m_dt = m_pHighResolutionTimer->Elapsed();
-	
-
 }
 
 

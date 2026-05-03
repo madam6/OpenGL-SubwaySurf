@@ -19,6 +19,7 @@ class CCrystal;
 class CCatmullRom;
 class Entity;
 class Renderer;
+class CFrameBufferObject;
 struct Renderable;
 struct RenderData
 {
@@ -61,6 +62,7 @@ struct FrameData
 	};
 
 	std::vector<Light> lights;
+	bool isDepthPass{ false };
 };
 
 enum Shaders
@@ -75,7 +77,7 @@ private:
 	// Three main methods used in the game.  Initialise runs once, while Update and Render run repeatedly in the game loop.
 	void Initialise();
 	void Update();
-	void Render();
+	void Render(bool depthPass);
 
 	void InitShaders();
 
@@ -87,6 +89,7 @@ private:
 	CPlane *m_pPlanarTerrain;
 	CPlane* m_pHeartIcon;
 	CPlane* m_pSpeedLinesOverlay;
+	CFrameBufferObject* m_DepthBuffer;
 	CFreeTypeFont *m_pFtFont;
 	COpenAssetImportMesh *m_pBarrelMesh;
 	COpenAssetImportMesh *m_pHorseMesh;

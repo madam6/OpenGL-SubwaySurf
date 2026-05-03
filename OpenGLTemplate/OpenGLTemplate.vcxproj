@@ -146,6 +146,7 @@
     <ClInclude Include="EntityParser.h" />
     <ClInclude Include="EventSystem.h" />
     <ClInclude Include="FollowCam.h" />
+    <ClInclude Include="FrameBufferObject.h" />
     <ClInclude Include="FreeCam.h" />
     <ClInclude Include="FreeTypeFont.h" />
     <ClInclude Include="Game.h" />
@@ -188,6 +189,7 @@
     <ClCompile Include="EntityParser.cpp" />
     <ClCompile Include="EventSystem.cpp" />
     <ClCompile Include="FollowCam.cpp" />
+    <ClCompile Include="FrameBufferObject.cpp" />
     <ClCompile Include="FreeCam.cpp" />
     <ClCompile Include="FreeTypeFont.cpp" />
     <ClCompile Include="Game.cpp" />
@@ -214,8 +216,6 @@
     <ClCompile Include="VertexBufferObjectIndexed.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="crystalShader.frag" />
-    <None Include="crystalShader.vert" />
     <None Include="resources\entities.cfg" />
     <None Include="resources\shaders\crystalShader.frag" />
     <None Include="resources\shaders\crystalShader.vert" />
