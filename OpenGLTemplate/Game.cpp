@@ -636,12 +636,14 @@ void Game::DisplayHUD()
 	glDisable(GL_DEPTH_TEST);
 
 	int score = 0;
+	int recordScore = 0;
 	int health = 0;
 	if (auto mc = FetchEntityByName("MC")) 
 	{
 		if (auto currencyMgr = mc->FindComponent<CurrencyManagerComponent>()) 
 		{
 			score = currencyMgr->GetScore();
+			recordScore = currencyMgr->GetRecordScore();
 			health = currencyMgr->GetHealth();
 		}
 	}
@@ -686,6 +688,7 @@ void Game::DisplayHUD()
 	fontProgram->SetUniform("vColour", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
 	m_pFtFont->Render(width - 100, height - 70, 32, "x %d", score);
+	m_pFtFont->Render(width - 260, height - 120, 32, "Lap Record: %d", recordScore);
 
 	CShaderProgram* pUiProgram = GetShader("uiShader");
 	pUiProgram->UseProgram();

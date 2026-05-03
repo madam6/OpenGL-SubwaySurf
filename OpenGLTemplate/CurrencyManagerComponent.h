@@ -17,6 +17,7 @@ public:
     ~CurrencyManagerComponent() { EventSystem::Instance().Unsubscribe("OnCollision", this); }
     void AddRenderData(std::vector<RenderData>& renderQueue) override;
     int GetScore() const { return m_Score; }
+    int GetRecordScore() const { return m_RecordScore; }
     int GetHealth() const { return m_Health; }
 private:
     void RespawnAll();
@@ -34,7 +35,7 @@ private:
 
     std::vector<std::shared_ptr<CollectibleComponent>> m_Fences;
     std::string m_FenceBaseName = "Fence";
-    int m_MaxFences = 15;
+    int m_MaxFences = 100;
 
     std::vector<std::shared_ptr<CollectibleComponent>> m_Bananas;
     std::string m_BananaBaseName = "Banana";
@@ -45,6 +46,7 @@ private:
 
     int m_CurrentLap = 0;
     int m_Score = 0;
+    int m_RecordScore = 0;
     int m_MinBatches = 2;
     int m_MaxBatches = 5;
     int m_MinPerBatch = 3;

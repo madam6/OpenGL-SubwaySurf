@@ -128,7 +128,7 @@ void CurrencyManagerComponent::Update(float dt)
         if (currentLap > m_CurrentLap)
         {
             m_CurrentLap = currentLap;
-
+            m_Score = 0;
             RespawnAll();
 
             DEBUG_MSG("Lap %d completed!", m_CurrentLap);
@@ -293,15 +293,17 @@ void CurrencyManagerComponent::RespawnAll()
     for (auto& fence : m_Fences) fence->Collect();
     for (auto& banana : m_Bananas) banana->Collect();
 
-    int numBatches = m_MinBatches + (rand() % (m_MaxBatches - m_MinBatches + 1));
+
     int crystalIndex = 0;
     int heartIndex = 0;
     int fenceIndex = 0;
     int bananaIndex = 0;
 
-    float currentBatchDist = m_PlayerRef->GetCurrentDistance() + 50.0f + (rand() % 50);
+    float currentDist = m_PlayerRef->GetCurrentDistance() + 50.0f + (rand() % 50);
 
-    for (int b = 0; b < numBatches; b++)
+    float totalTrackLength = m_TrackRef->GetTotalDistance();
+
+    while (currentDist < (m_PlayerRef->GetCurrentDistance() + totalTrackLength - 100.0f))
     {
         int crystalsInThisBatch = m_MinPerBatch + (rand() % (m_MaxPerBatch - m_MinPerBatch + 1));
         int currentLane = (rand() % 3) - 1;
@@ -310,7 +312,7 @@ void CurrencyManagerComponent::RespawnAll()
         {
             if (crystalIndex >= m_Crystals.size()) break;
 
-            float dist = currentBatchDist + (i * m_SpacingInBatch);
+            float dist = currentDist + (i * m_SpacingInBatch);
             glm::vec3 p, up, forwardVec;
             m_TrackRef->Sample(dist, p, up);
             m_TrackRef->Sample(dist + 1.0f, forwardVec);
@@ -327,11 +329,11 @@ void CurrencyManagerComponent::RespawnAll()
             crystalIndex++;
         }
 
-        currentBatchDist += (crystalsInThisBatch * m_SpacingInBatch);
+        currentDist += (crystalsInThisBatch * m_SpacingInBatch);
 
         if (heartIndex < m_Hearts.size() && (rand() % 100 < 50))
         {
-            float heartDist = currentBatchDist + 15.0f;
+            float heartDist = currentDist + 15.0f;
             int heartLane = (rand() % 3) - 1;
 
             glm::vec3 p, up, forwardVec;
@@ -352,7 +354,7 @@ void CurrencyManagerComponent::RespawnAll()
 
         if (fenceIndex < m_Fences.size() && (rand() % 100 < 80))
         {
-            float fenceDist = currentBatchDist + 30.0f;
+            float fenceDist = currentDist + 30.0f;
             int fenceLane = (rand() % 3) - 1;
 
             glm::vec3 p, up, forwardVec;
@@ -375,7 +377,7 @@ void CurrencyManagerComponent::RespawnAll()
 
         if (bananaIndex < m_Bananas.size() && (rand() % 100 < 90))
         {
-            float fenceDist = currentBatchDist + 200.0f;
+            float fenceDist = currentDist + 200.0f;
             int bananaLane = (rand() % 3) - 1;
 
             glm::vec3 p, up, forwardVec;
@@ -396,10 +398,9 @@ void CurrencyManagerComponent::RespawnAll()
             bananaIndex++;
         }
 
-        currentBatchDist += 150.0f + (rand() % 101);
+        currentDist += 150.0f + (rand() % 101);
     }
 }
-
 void CurrencyManagerComponent::OnEvent(const std::string& eventName, const EventData& data) 
 {
     if (eventName == "OnCollision")
@@ -439,6 +440,7 @@ void CurrencyManagerComponent::OnEvent(const std::string& eventName, const Event
                 if (hitItem->GetName().find(m_CurrencyBaseName) != std::string::npos)
                 {
                     m_Score += 1;
+                    m_RecordScore = std::max(m_Score, m_RecordScore);
                     DEBUG_MSG("Collected Crystal! Score: %d", m_Score);
                 }
                 else if (hitItem->GetName().find(m_HeartBaseName) != std::string::npos)
@@ -487,4 +489,7 @@ void CurrencyManagerComponent::Apply(const PropertyMap& props)
     
     it = props.find("health");
     if (it != props.end()) m_Health = std::stoi(it->second);
+
+    it = props.find("max_fences");
+    if (it != props.end()) m_MaxFences = std::stoi(it->second);
 }
