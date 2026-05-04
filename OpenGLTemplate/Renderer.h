@@ -8,4 +8,8 @@ class Renderer
 	void Render(const FrameData& frameData);
 
 	std::vector<RenderData> m_RenderQueue;
+
+	void SetDepthBuffer(CFrameBufferObject* buffer) { m_DepthBuffer = buffer; };
+
+	CFrameBufferObject* m_DepthBuffer{nullptr};
 };

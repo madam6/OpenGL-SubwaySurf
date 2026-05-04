@@ -10,9 +10,12 @@ layout (location = 1) in vec2 inCoord;
 layout (location = 2) in vec3 inNormal;
 layout (location = 5) in mat4 instanceModelMatrix; 
 
+uniform mat4 lightSpaceMatrix;
+
 out vec3 vEyeNorm;
 out vec4 vEyePosition;
 out vec2 vTexCoord;
+out vec4 FragPosLightSpace;
 
 void main() 
 {
@@ -23,6 +26,6 @@ void main()
     vEyeNorm = normalize(mat3(matrices.viewMatrix * instanceModelMatrix) * inNormal);
 
     vTexCoord = inCoord;
-    
+    FragPosLightSpace = lightSpaceMatrix * instanceModelMatrix * vec4(inPosition, 1.0);
     gl_Position = matrices.projMatrix * vEyePosition;
 }

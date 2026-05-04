@@ -62,6 +62,7 @@ struct FrameData
 	};
 
 	std::vector<Light> lights;
+	glm::mat4 lightSpaceMatrix;
 	bool isDepthPass{ false };
 };
 

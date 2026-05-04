@@ -1,6 +1,7 @@
 #include "Renderer.h"
 #include "Shaders.h"
 #include "OpenAssetImportMesh.h"
+#include "FrameBufferObject.h"
 
 void Renderer::Render(const FrameData& frameData)
 {
@@ -34,7 +35,15 @@ void Renderer::Render(const FrameData& frameData)
             shader->SetUniform("matrices.projMatrix", frameData.projMatrix);
             shader->SetUniform("matrices.viewMatrix", frameData.viewMatrix);
             shader->SetUniform("numLights", (int)frameData.lights.size());
-            shader->SetUniform("bIsDepthPass", frameData.isDepthPass);
+            shader->SetUniform("bIsDepthPass", frameData.isDepthPass ? 1 : 0);
+            shader->SetUniform("lightSpaceMatrix", frameData.lightSpaceMatrix);
+
+            if (!frameData.isDepthPass && m_DepthBuffer)
+            {
+                int shadowMapTextureUnit = 11;
+                m_DepthBuffer->BindDepth(shadowMapTextureUnit);
+                shader->SetUniform("shadowMap", shadowMapTextureUnit);
+            }
 
             for (int i = 0; i < frameData.lights.size(); i++)
             {
@@ -71,7 +80,7 @@ void Renderer::Render(const FrameData& frameData)
             shader->SetUniform("matrices.modelViewMatrix", modelView);
             glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelView)));
             shader->SetUniform("matrices.normalMatrix", normalMatrix);
-
+            shader->SetUniform("modelMatrix", renderable.modelMatrix);
             if (auto mesh = std::dynamic_pointer_cast<COpenAssetImportMesh>(renderable.mesh)) 
             {
                 int numBones = mesh->GetNumBones();
@@ -97,10 +106,19 @@ void Renderer::Render(const FrameData& frameData)
         if (!shader) continue;
 
         shader->UseProgram();
+        shader->SetUniform("lightSpaceMatrix", frameData.lightSpaceMatrix);
         shader->SetUniform("matrices.projMatrix", frameData.projMatrix);
         shader->SetUniform("matrices.viewMatrix", frameData.viewMatrix);
         shader->SetUniform("numLights", (int)frameData.lights.size());
         shader->SetUniform("bIsDepthPass", frameData.isDepthPass ? 1 : 0);
+
+        if (!frameData.isDepthPass && m_DepthBuffer)
+        {
+            int shadowMapTextureUnit = 11;
+            m_DepthBuffer->BindDepth(shadowMapTextureUnit);
+            shader->SetUniform("shadowMap", shadowMapTextureUnit);
+        }
+
         for (int i = 0; i < frameData.lights.size(); i++)
         {
             std::string base = "lights[" + std::to_string(i) + "]";

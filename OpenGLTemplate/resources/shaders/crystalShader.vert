@@ -15,9 +15,11 @@ layout (location = 3) in vec3 inColour;
 layout (location = 4) in mat4 instanceModelMatrix; 
 
 uniform float uTime;
+uniform mat4 lightSpaceMatrix;
 
 out vec2 vTexCoord;
 out vec3 vColour;
+out vec4 FragPosLightSpace;
 
 void main() 
 {
@@ -44,6 +46,8 @@ void main()
 
     mat3 normalMat = mat3(modelViewMat);
     vec3 vEyeNorm = normalize(normalMat * inNormal);
+
+    FragPosLightSpace = lightSpaceMatrix * worldPos;
 
     vTexCoord = inTextureCoord;
     vColour = PhongModel(vEyePosition, vEyeNorm);

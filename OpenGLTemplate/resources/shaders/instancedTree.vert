@@ -15,6 +15,10 @@ layout (location = 5) in mat4 instanceModelMatrix;
 out vec3 vColour;    
 out vec2 vTexCoord;    
 out vec3 worldPosition;
+out vec4 FragPosLightSpace;
+
+uniform mat4 lightSpaceMatrix;
+
 
 // Terrain noise funcs (copied from mainShader.vert)
 vec2 randomGradient(vec2 p) 
@@ -76,6 +80,7 @@ void main()
     vec3 vEyeNorm = normalize(mat3(modelViewMat) * inNormal);
     vec4 vEyePosition = modelViewMat * vec4(inPosition, 1.0f);
         
+    FragPosLightSpace = lightSpaceMatrix * instanceModelMatrix * vec4(inPosition, 1.0);
     vColour = PhongModel(vEyePosition, vEyeNorm);
     vTexCoord = inCoord;
 }

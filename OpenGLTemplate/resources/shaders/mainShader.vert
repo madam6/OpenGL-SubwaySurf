@@ -15,10 +15,12 @@ layout (location = 2) in vec3 inNormal;
 
 out vec3 vColour;    
 out vec2 vTexCoord;    
-out vec3 worldPosition;    
+out vec3 worldPosition;
 
+uniform mat4 lightSpaceMatrix;
 uniform bool isTerrain;
-
+uniform mat4 modelMatrix;
+out vec4 FragPosLightSpace;
 // Pseudo-random hash
 vec2 randomGradient(vec2 p) 
 {
@@ -64,6 +66,7 @@ void main()
 {   
     vec3 vEyeNorm;
     vec4 vEyePosition;
+    vec4 trueWorldPos;
 
     if (isTerrain)
     {
@@ -90,7 +93,7 @@ void main()
         vec3 rightSlope = p1 - p0;
         vec3 forwardSlope = p2 - p0;
 
-
+        trueWorldPos = modelMatrix * vec4(p0, 1.0);
         worldPosition = p0;
         gl_Position = matrices.projMatrix * matrices.modelViewMatrix * vec4(p0, 1.0f);
 
@@ -101,13 +104,14 @@ void main()
     }
     else
     {
+        trueWorldPos = modelMatrix * vec4(inPosition, 1.0);
         worldPosition = inPosition;
         gl_Position = matrices.projMatrix * matrices.modelViewMatrix * vec4(inPosition, 1.0f);
         vEyeNorm = normalize(matrices.normalMatrix * inNormal);
         vEyePosition = matrices.modelViewMatrix * vec4(inPosition, 1.0f);
     }
     
-    
+    FragPosLightSpace = lightSpaceMatrix * trueWorldPos;
         
     vColour = PhongModel(vEyePosition, vEyeNorm);
     vTexCoord = inCoord;

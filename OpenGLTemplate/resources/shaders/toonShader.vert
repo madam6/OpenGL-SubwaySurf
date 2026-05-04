@@ -13,7 +13,9 @@ layout (location = 3) in vec3 inColour;
 layout (location = 4) in mat4 instanceModelMatrix; 
 
 uniform float uTime;
+uniform mat4 lightSpaceMatrix;
 
+out vec4 FragPosLightSpace;
 out vec3 vEyeNorm;
 out vec4 vEyePosition;
 
@@ -40,6 +42,7 @@ void main()
 
     mat4 modelViewMat = matrices.viewMatrix * instanceModelMatrix * localRotY;
     
+    FragPosLightSpace = lightSpaceMatrix * worldPos;
     vEyePosition = modelViewMat * vec4(inPosition, 1.0);
     vEyeNorm = normalize(mat3(modelViewMat) * inNormal);
 }

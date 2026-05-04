@@ -115,7 +115,9 @@ void Game::Initialise()
 	m_pAudio = new CAudio;
 	m_Renderer = std::make_unique<Renderer>();
 	m_DepthBuffer = new CFrameBufferObject;
-	m_DepthBuffer->Create(1920, 1080);
+	float depthBufferScale = 8.f;
+	m_DepthBuffer->Create(depthBufferScale * 4096, depthBufferScale * 4096);
+	m_Renderer->SetDepthBuffer(m_DepthBuffer);
 
 	RECT dimensions = m_gameWindow.GetDimensions();
 	int width = dimensions.right - dimensions.left;
@@ -214,28 +216,31 @@ void Game::Initialise()
 void Game::Render(bool depthPass)
 {
 	glm::vec4 lightPosition1 = glm::vec4(-100, 100, -100, 1);
-	glm::vec4 sunPosition = glm::vec4(200, 300, -400, 1);
-
+	glm::vec4 sunPosition = glm::vec4(-1000, 900, -1000, 1);
+	glEnable(GL_DEPTH_TEST);
 	if (depthPass)
 	{
 		m_DepthBuffer->Bind(true);
+		glCullFace(GL_FRONT);
 	}
 	else
 	{
+		glCullFace(GL_BACK);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		RECT dimensions = m_gameWindow.GetDimensions();
 		glViewport(0, 0, dimensions.right - dimensions.left, dimensions.bottom - dimensions.top);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glEnable(GL_DEPTH_TEST);
 	}
 
 	glm::mat4 viewMatrix;
 	glm::mat4 projMatrix;
 
+	float projectionScale = 1.5f;
+
 	if (depthPass)
 	{
-		projMatrix = glm::ortho(-1000.0f, 1000.0f, -1000.0f, 1000.0f, 1.0f, 2500.0f);
-		viewMatrix = glm::lookAt(glm::vec3(sunPosition), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		projMatrix = glm::ortho(projectionScale * -1000.0f, projectionScale * 1000.0f, projectionScale * -1000.0f, projectionScale *  1000.0f, 1.0f, 2500.0f);
+		viewMatrix = glm::lookAt(glm::vec3(sunPosition), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
 	}
 	else
 	{
@@ -249,6 +254,7 @@ void Game::Render(bool depthPass)
 	pMainProgram->SetUniform("sampler0", 0);
 	pMainProgram->SetUniform("matrices.projMatrix", projMatrix);
 	pMainProgram->SetUniform("bIsDepthPass", depthPass ? 1 : 0);
+	pMainProgram->SetUniform("lightSpaceMatrix", glm::ortho(projectionScale * -1000.0f, projectionScale * 1000.0f, projectionScale * -1000.0f, projectionScale *  1000.0f, 1.0f, 2500.0f) * glm::lookAt(glm::vec3(sunPosition), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
 
 	if (!depthPass)
 	{
@@ -375,6 +381,7 @@ void Game::Render(bool depthPass)
 	frameData.time = s_totalTime;
 
 	frameData.isDepthPass = depthPass;
+	frameData.lightSpaceMatrix = glm::ortho(projectionScale * -1000.0f, projectionScale * 1000.0f, projectionScale * -1000.0f, projectionScale *  1000.0f, 1.0f, 2500.0f) * glm::lookAt(glm::vec3(sunPosition), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
 
 	m_Renderer->Render(frameData);
 
@@ -480,6 +487,8 @@ void Game::InitShaders()
 	pTreeProgram->AddShaderToProgram(&shShaders[14]);
 	pTreeProgram->AddShaderToProgram(&shShaders[1]);
 	pTreeProgram->LinkProgram();
+	pTreeProgram->UseProgram();
+	pTreeProgram->SetUniform("CubeMapTex", 10);
 	m_ShaderPrograms["InstancedTreeShader"] = pTreeProgram;
 
 	CShaderProgram* pToonMeshProgram = new CShaderProgram;

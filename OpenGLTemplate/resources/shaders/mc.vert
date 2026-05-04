@@ -13,10 +13,14 @@ uniform struct Matrices
     mat4 modelViewMatrix; 
     mat3 normalMatrix;
 } matrices;
+uniform mat4 lightSpaceMatrix;
+uniform mat4 modelMatrix;
+
 
 out vec2 vTexCoord;
 out vec3 vNormal;
 out vec3 vPosition;
+out vec4 FragPosLightSpace;
 
 void main()
 {
@@ -33,6 +37,10 @@ void main()
 
     mat3 boneNormalTransform = mat3(boneTransform);
     vNormal = normalize(matrices.normalMatrix * boneNormalTransform * normal);
+
+    vec4 worldPosition = modelMatrix * localPosition;
+
+    FragPosLightSpace = lightSpaceMatrix * worldPosition;
 
     vec4 vEyePosition = matrices.modelViewMatrix * localPosition;
     vPosition = vEyePosition.xyz;
