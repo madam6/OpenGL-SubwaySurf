@@ -3,6 +3,8 @@
 #include "CameraMode.h"
 #include "FreeCam.h"
 #include "PathBuilderCam.h"
+#include "FirstPersonCam.h"
+#include "SideCamera.h"
 #include "FollowCam.h"
 
 // Constructor for camera -- initialise with some default values
@@ -13,8 +15,12 @@ CCamera::CCamera()
 	m_CamData.upVector = glm::vec3(0.0f, 1.0f, 0.0f);
 	m_CameraModes.reserve(5);
 	m_CameraModes.push_back(std::make_unique<FollowCam>());
+	m_CameraModes.push_back(std::make_unique<FirstPersonCam>());
+	m_CameraModes.push_back(std::make_unique<SideCamera>());
 	m_CameraModes.push_back(std::make_unique<FreeCam>());
-	m_CameraModes.push_back(std::make_unique<PathBuilderCam>());
+
+	// m_CameraModes.push_back(std::make_unique<PathBuilderCam>());
+
 	m_CameraModeIndex = 0;
 	m_CurrentMode = mode::follow;
 	m_speed = 0.025f;
@@ -118,14 +124,23 @@ void CCamera::TranslateByKeyboard(double dt)
 	{
 		IncrementCameraIndexSafe();
 
-		if (m_CurrentMode == mode::pathBuilding) {
-			DEBUG_MSG("Switched to PathBuilder Mode!");
-		}
-		else if (m_CurrentMode == mode::follow) {
+		switch (m_CurrentMode)
+		{
+		case mode::follow:
 			DEBUG_MSG("Switched to Follow Mode!");
-		}
-		else {
+			break;
+		case mode::firstPerson:
+			DEBUG_MSG("Switched to First Person Mode!");
+			break;
+		case mode::sideView:
+			DEBUG_MSG("Switched to Side View Mode!");
+			break;
+		case mode::normal:
 			DEBUG_MSG("Switched to FreeCam Mode!");
+			break;
+		case mode::pathBuilding:
+			DEBUG_MSG("Switched to PathBuilder Mode!");
+			break;
 		}
 	}
 	tabWasPressed = tabIsPressed;

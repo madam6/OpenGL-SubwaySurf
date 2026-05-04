@@ -155,6 +155,12 @@
     <ClInclude Include="FrameBufferObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FirstPersonCam.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SideCamera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Audio.cpp">
@@ -279,6 +285,12 @@
     </ClCompile>
     <ClCompile Include="FrameBufferObject.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FirstPersonCam.cpp">
+      <Filter>Source Files\GameSystems</Filter>
+    </ClCompile>
+    <ClCompile Include="SideCamera.cpp">
+      <Filter>Source Files\GameSystems</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

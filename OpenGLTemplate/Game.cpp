@@ -115,7 +115,7 @@ void Game::Initialise()
 	m_pAudio = new CAudio;
 	m_Renderer = std::make_unique<Renderer>();
 	m_DepthBuffer = new CFrameBufferObject;
-	float depthBufferScale = 8.f;
+	float depthBufferScale = 2.f;
 	m_DepthBuffer->Create(depthBufferScale * 4096, depthBufferScale * 4096);
 	m_Renderer->SetDepthBuffer(m_DepthBuffer);
 
@@ -235,7 +235,7 @@ void Game::Render(bool depthPass)
 	glm::mat4 viewMatrix;
 	glm::mat4 projMatrix;
 
-	float projectionScale = 1.5f;
+	float projectionScale = 1.f;
 
 	if (depthPass)
 	{

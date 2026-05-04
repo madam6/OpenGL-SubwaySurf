@@ -12,6 +12,8 @@ struct camData
 enum mode
 {
 	follow,
+	firstPerson,
+	sideView,
 	normal,
 	pathBuilding,
 };
