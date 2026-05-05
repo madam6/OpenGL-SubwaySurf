@@ -285,16 +285,58 @@ void CCatmullRom::CreateOffsetCurves()
 
 void CCatmullRom::CreateTrack()
 {
+	glGenVertexArrays(1, &m_vaoTrack);
+	glBindVertexArray(m_vaoTrack);
+
+	CVertexBufferObject vbo;
+	vbo.Create();
+	vbo.Bind();
+
+	m_trianglePoints.clear();
+
 	for (int i = 0; i < m_leftOffsetPoints.size(); i++)
 	{
+		float v = (float)i / 80.0f;
+		glm::vec2 textureLeft(0.0f, v);
+		glm::vec2 textureRight(1.0f, v);
+
+		glm::vec3 normal = m_centrelineUpVectors[i];
+
 		m_trianglePoints.push_back(m_leftOffsetPoints[i]);
+		vbo.AddData(&m_leftOffsetPoints[i], sizeof(glm::vec3));
+		vbo.AddData(&textureLeft, sizeof(glm::vec2));
+		vbo.AddData(&normal, sizeof(glm::vec3));
+
 		m_trianglePoints.push_back(m_rightOffsetPoints[i]);
+		vbo.AddData(&m_rightOffsetPoints[i], sizeof(glm::vec3));
+		vbo.AddData(&textureRight, sizeof(glm::vec2));
+		vbo.AddData(&normal, sizeof(glm::vec3));
 	}
+
+	float end = (float)m_leftOffsetPoints.size() / 80.0f;
+	glm::vec2 textureLeft(0.0f, end);
+	glm::vec2 textureRight(1.0f, end);
+	glm::vec3 normalEnd = m_centrelineUpVectors[0];
+
 	m_trianglePoints.push_back(m_leftOffsetPoints[0]);
+	vbo.AddData(&m_leftOffsetPoints[0], sizeof(glm::vec3));
+	vbo.AddData(&textureLeft, sizeof(glm::vec2));
+	vbo.AddData(&normalEnd, sizeof(glm::vec3));
+
 	m_trianglePoints.push_back(m_rightOffsetPoints[0]);
+	vbo.AddData(&m_rightOffsetPoints[0], sizeof(glm::vec3));
+	vbo.AddData(&textureRight, sizeof(glm::vec2));
+	vbo.AddData(&normalEnd, sizeof(glm::vec3));
 
+	vbo.UploadDataToGPU(GL_STATIC_DRAW);
 
-	CreateListGPUData(m_vaoTrack, m_trianglePoints);
+	GLsizei stride = 2 * sizeof(glm::vec3) + sizeof(glm::vec2);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, 0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*)sizeof(glm::vec3));
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(glm::vec3) + sizeof(glm::vec2)));
 }
 
 void CCatmullRom::CreateTrack(std::string a_sDirectory, std::string a_sFilename)
@@ -318,7 +360,7 @@ void CCatmullRom::CreateTrack(std::string a_sDirectory, std::string a_sFilename)
 	m_trianglePoints.push_back(m_rightOffsetPoints[0]);
 
 
-	CreateListGPUData(m_vaoTrack, m_trianglePoints);
+	CreateTrack();
 }
 
 
