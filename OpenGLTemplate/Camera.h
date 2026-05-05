@@ -14,6 +14,7 @@ enum mode
 	follow,
 	firstPerson,
 	sideView,
+	topDown,
 	normal,
 	pathBuilding,
 };

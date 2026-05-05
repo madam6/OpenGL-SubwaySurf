@@ -161,6 +161,12 @@
     <ClInclude Include="SideCamera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TopDownCam.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sun.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Audio.cpp">
@@ -291,6 +297,12 @@
     </ClCompile>
     <ClCompile Include="SideCamera.cpp">
       <Filter>Source Files\GameSystems</Filter>
+    </ClCompile>
+    <ClCompile Include="TopDownCam.cpp">
+      <Filter>Source Files\GameSystems</Filter>
+    </ClCompile>
+    <ClCompile Include="Sun.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

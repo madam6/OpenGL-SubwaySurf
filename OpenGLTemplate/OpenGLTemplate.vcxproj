@@ -169,7 +169,9 @@
     <ClInclude Include="SideCamera.h" />
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="Sphere.h" />
+    <ClInclude Include="Sun.h" />
     <ClInclude Include="Texture.h" />
+    <ClInclude Include="TopDownCam.h" />
     <ClInclude Include="TreeMeshComponent.h" />
     <ClInclude Include="VertexBufferObject.h" />
     <ClInclude Include="VertexBufferObjectIndexed.h" />
@@ -214,7 +216,9 @@
     <ClCompile Include="SideCamera.cpp" />
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="Sphere.cpp" />
+    <ClCompile Include="Sun.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="TopDownCam.cpp" />
     <ClCompile Include="TreeMeshComponent.cpp" />
     <ClCompile Include="VertexBufferObject.cpp" />
     <ClCompile Include="VertexBufferObjectIndexed.cpp" />

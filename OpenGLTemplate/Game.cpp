@@ -143,6 +143,9 @@ void Game::Initialise()
 	m_pCrystal = std::make_unique<CCrystal>();
 	m_pCrystal->Create("resources\\textures\\", "crystalTexture.jpg");
 
+	m_pSun = std::make_unique<CSun>();
+	m_pSun->Create("resources\\textures\\", "crystalTexture.jpg");
+
 	m_pHeartIcon = new CPlane();
 	m_pHeartIcon->Create("resources\\textures\\", "heart.png", 40.0f, 40.0f, 1.0f);
 
@@ -321,18 +324,19 @@ void Game::Render(bool depthPass)
 	{
 		modelViewMatrixStack.Push();
 		modelViewMatrixStack.Translate(glm::vec3(sunPosition));
-		modelViewMatrixStack.Scale(15.0f);
+
+		modelViewMatrixStack.Scale(250.0f);
 
 		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 		pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
 
 		pMainProgram->SetUniform("bUseTexture", false);
 
-		pMainProgram->SetUniform("material1.Ma", glm::vec3(1.5f, 1.5f, 0.0f));
+		pMainProgram->SetUniform("material1.Ma", glm::vec3(1.5f, 1.5f, 0.8f));
 		pMainProgram->SetUniform("material1.Md", glm::vec3(0.0f));
 		pMainProgram->SetUniform("material1.Ms", glm::vec3(0.0f));
 
-		m_pSphere->Render();
+		m_pSun->Render();
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -341,8 +345,8 @@ void Game::Render(bool depthPass)
 		modelViewMatrixStack.Scale(1.4f);
 		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 
-		pMainProgram->SetUniform("material1.Ma", glm::vec3(0.6f, 0.2f, 0.0f));
-		m_pSphere->Render();
+		pMainProgram->SetUniform("material1.Ma", glm::vec3(0.8f, 0.3f, 0.0f));
+		m_pSun->Render();
 
 		glDepthMask(GL_TRUE);
 		glDisable(GL_BLEND);

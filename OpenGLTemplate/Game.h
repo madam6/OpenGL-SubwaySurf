@@ -2,6 +2,7 @@
 
 #include "Common.h"
 #include "GameWindow.h"
+#include "Sun.h"
 // Classes used in game.  For a new class, declare it here and provide a pointer to an object of this class below.  Then, in Game.cpp, 
 // include the header.  In the Game constructor, set the pointer to NULL and in Game::Initialise, create a new object.  Don't forget to 
 // delete the object in the destructor.   
@@ -100,6 +101,7 @@ private:
 
 	std::unique_ptr<CCatmullRom> m_CatmulRom;
 	std::unique_ptr<CCrystal> m_pCrystal;
+	std::unique_ptr<CSun> m_pSun;
 	std::unique_ptr<Renderer> m_Renderer;
 
 	float m_currentDistance;
