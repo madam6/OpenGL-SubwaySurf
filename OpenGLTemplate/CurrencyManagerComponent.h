@@ -7,6 +7,8 @@
 
 class PlayerTrackMovementComponent;
 
+// Main pick up management controller.
+// Allows to respawn registered pickups, configure how they are spawned, what effects do they have
 class CurrencyManagerComponent : public Component, public IObserver
 {
 public:

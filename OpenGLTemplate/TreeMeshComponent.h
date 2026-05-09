@@ -5,6 +5,7 @@
 #include "ShaderComponent.h"
 #include "MaterialComponent.h"
 
+// Component wrapper of instanced tree meshes
 class TreeMeshComponent : public Component
 {
 public:

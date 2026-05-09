@@ -549,7 +549,7 @@ CShaderProgram* Game::GetShader(const std::string& name) const
 		return it->second;
 	}
 
-	LOG_ERROR("Shader not found: %s", name.c_str());
+	//LOG_ERROR("Shader not found: %s", name.c_str());
 	return nullptr;
 }
 
@@ -593,6 +593,8 @@ void Game::Update()
 
 	m_pCamera->SetPerspectiveProjectionMatrix(glm::radians(currentFOV), (float)width / (float)height, 0.5f, 5000.0f);
 
+	// Collision detection system pass, runs every frame and checks boundary boxes
+	// be carefull not to overflow with colliders
 	std::vector<ColliderComponent*> colliders;
 	for (size_t i = 0; i < m_entities.size(); i++)
 	{
@@ -619,6 +621,7 @@ void Game::Update()
 
 			if (collisionX && collisionY && collisionZ)
 			{
+				// Collsion happened, broadcast an event!
 				CollisionPayload payload;
 				payload.entityA = colliders[i]->GetOwner();
 				payload.entityB = colliders[j]->GetOwner();
@@ -767,6 +770,7 @@ void Game::DisplayHUD()
 		glDisable(GL_BLEND);
 	}
 
+	// Render hearts in a horizontal stacks based on player's health
 	for (int i = 0; i < health; i++)
 	{
 		float xPos = (width - 75.0f) - (i * 45.0f);
@@ -815,22 +819,13 @@ std::shared_ptr<Entity> Game::SpawnEntityFromTemplate(const std::string& templat
 
 // The game loop runs repeatedly until game over
 void Game::GameLoop()
-{
-	/*
-	// Fixed timer
-	dDt = pHighResolutionTimer->Elapsed();
-	if (dDt > 1000.0 / (double) Game::FPS) {
-		pHighResolutionTimer->Start();
-		Update();
-		Render();
-	}
-	*/
-	
-	
+{	
 	// Variable timer
 	m_pHighResolutionTimer->Start();
 	Update();
+	// Depth pass
 	Render(true);
+	// Render pass
 	Render(false);
 	m_dt = m_pHighResolutionTimer->Elapsed();
 }
@@ -918,12 +913,6 @@ LRESULT Game::ProcessEvents(HWND window,UINT message, WPARAM w_param, LPARAM l_p
 			{
 			case VK_ESCAPE:
 				PostQuitMessage(0);
-				break;
-			case '1':
-				//m_pAudio->PlayEventSound();
-				break;
-			case VK_F1:
-				//m_pAudio->PlayEventSound();
 				break;
 			}
 		}

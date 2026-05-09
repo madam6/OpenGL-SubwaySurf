@@ -3,6 +3,8 @@
 #include "Component.h"
 struct RenderData;
 class EntityParser;
+
+// Entity of ECS. Has a unique name and allows to query for entities currently present on itself
 class Entity
 {
 public:

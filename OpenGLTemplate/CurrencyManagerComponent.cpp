@@ -131,7 +131,7 @@ void CurrencyManagerComponent::Update(float dt)
             m_Score = 0;
             RespawnAll();
 
-            DEBUG_MSG("Lap %d completed!", m_CurrentLap);
+            //DEBUG_MSG("Lap %d completed!", m_CurrentLap);
         }
     }
 }
@@ -441,22 +441,22 @@ void CurrencyManagerComponent::OnEvent(const std::string& eventName, const Event
                 {
                     m_Score += 1;
                     m_RecordScore = std::max(m_Score, m_RecordScore);
-                    DEBUG_MSG("Collected Crystal! Score: %d", m_Score);
+                    //DEBUG_MSG("Collected Crystal! Score: %d", m_Score);
                 }
                 else if (hitItem->GetName().find(m_HeartBaseName) != std::string::npos)
                 {
                     m_Health += 1;
-                    DEBUG_MSG("Collected Heart! Health: %d", m_Health);
+                    //DEBUG_MSG("Collected Heart! Health: %d", m_Health);
                 }
                 else if (hitItem->GetName().find(m_FenceBaseName) != std::string::npos)
                 {
                     m_Health -= 1;
-                    DEBUG_MSG("Hit a Fence! Lost a heart! Health: %d", m_Health);
+                    //DEBUG_MSG("Hit a Fence! Lost a heart! Health: %d", m_Health);
                     if (m_PlayerRef) m_PlayerRef->StartRecovery();
                 }
                 else if (hitItem->GetName().find(m_BananaBaseName) != std::string::npos)
                 {
-                    DEBUG_MSG("Hit a Banana! Speed up");
+                    //DEBUG_MSG("Hit a Banana! Speed up");
                     if (m_PlayerRef) m_PlayerRef->ApplySpeedBoost(3000.f);
                 }
             }

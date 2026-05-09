@@ -126,7 +126,7 @@ void MeshComponent::Apply(const PropertyMap& props)
 	}
 	else
 	{
-		LOG_ERROR("Incorrect properties on mesh component");
+		//LOG_ERROR("Incorrect properties on mesh component");
 		assert(0);
 	}
 }

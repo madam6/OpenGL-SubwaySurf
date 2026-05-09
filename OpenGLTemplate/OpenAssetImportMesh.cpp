@@ -77,6 +77,7 @@ bool COpenAssetImportMesh::LoadFBX(const std::string& filename)
             if (m_BoneMapping.find(boneName) == m_BoneMapping.end())
             {
                 BoneInfo bi;
+                // Assimp matrices are column-major, converting to GLM format
                 bi.offsetMatrix = glm::transpose(glm::make_mat4(&mesh->mBones[b]->mOffsetMatrix.a1));
                 m_BoneInfo.push_back(bi);
                 m_BoneMapping[boneName] = m_NumBones++;
@@ -314,7 +315,8 @@ void COpenAssetImportMesh::InitMesh(unsigned int Index, const aiMesh* paiMesh)
     std::vector<unsigned int> Indices;
 
     const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
-
+    // Populate per-vertex bone indices and weights
+    // Each bone contains a list of affected vertices and influence weights
     for (unsigned int i = 0 ; i < paiMesh->mNumVertices ; i++) {
         const aiVector3D* pPos      = &(paiMesh->mVertices[i]);
         const aiVector3D* pNormal   = &(paiMesh->mNormals[i]);
@@ -339,6 +341,7 @@ void COpenAssetImportMesh::InitMesh(unsigned int Index, const aiMesh* paiMesh)
             unsigned int vertexId = bone->mWeights[weightIndex].mVertexId;
             float weight = bone->mWeights[weightIndex].mWeight;
 
+            // Store this bone influence in the vertex for GPU skinning
             Vertices[vertexId].AddBoneData(internalBoneID, weight);
         }
     }
@@ -413,6 +416,7 @@ bool COpenAssetImportMesh::InitMaterials(const aiScene* pScene, const std::strin
         // Load a single colour texture matching the diffuse colour if no texture added
         if (!m_Textures[i])
         {
+            // Assurance in case of format issues
             std::string fallbackTexture;
             if (Dir.find("Palm") != std::string::npos)
             {
@@ -420,7 +424,6 @@ bool COpenAssetImportMesh::InitMaterials(const aiScene* pScene, const std::strin
             }
             else if (Dir.find("Fence") != std::string::npos)
             {
-                // Fence hack
                 fallbackTexture = Dir + "\\stone_fence_old_low_rock_BaseColor.png";
             }
             else
@@ -431,7 +434,7 @@ bool COpenAssetImportMesh::InitMaterials(const aiScene* pScene, const std::strin
             m_Textures[i] = new CTexture();
             if (m_Textures[i]->Load(fallbackTexture, true))
             {
-                DEBUG_MSG("Forced fallback texture load for: %s", fallbackTexture.c_str());
+                //DEBUG_MSG("Forced fallback texture load for: %s", fallbackTexture.c_str());
                 m_Textures[i]->SetSamplerObjectParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
                 m_Textures[i]->SetSamplerObjectParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 m_Textures[i]->SetSamplerObjectParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -472,6 +475,9 @@ void COpenAssetImportMesh::Render()
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)12);
         glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)20);
+        // Attribute 3: bone IDs (integer attribute)
+        // Attribute 4: bone weights
+        // Used by the vertex shader to blend bone transforms per vertex
         glVertexAttribIPointer(3, 4, GL_INT, sizeof(Vertex), (const GLvoid*)32);
         glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)48);
 
@@ -508,6 +514,8 @@ void COpenAssetImportMesh::UpdateAnimation(float dt)
 
     std::vector<glm::mat4> transforms(m_NumBones);
 
+    // Evaluate the skeleton pose at the current animation time
+    // and compute final bone matrices for all bones
     BoneTransform(animTime, transforms);
 
     for (int i = 0; i < m_NumBones; ++i)
@@ -518,9 +526,12 @@ void COpenAssetImportMesh::UpdateAnimation(float dt)
 
 void COpenAssetImportMesh::BoneTransform(float timeInSeconds, std::vector<glm::mat4>& transforms)
 {
+    // Traverses the node hierarchy and computes the final transform
+    // for each bone used in vertex skinning
     std::function<void(const aiNode*, const glm::mat4&)> readNode;
     readNode = [&](const aiNode* node, const glm::mat4& parentTransform)
         {
+            // Default node transform
             glm::mat4 nodeTransform = glm::transpose(glm::make_mat4(&node->mTransformation.a1));
 
             
@@ -528,6 +539,7 @@ void COpenAssetImportMesh::BoneTransform(float timeInSeconds, std::vector<glm::m
             {
                 for (unsigned int i = 0; i < m_Animation->mNumChannels; i++)
                 {
+                    // If this node has animation keys interpolate its animated transform
                     aiNodeAnim* anim = m_Animation->mChannels[i];
                     if (anim && std::string(anim->mNodeName.C_Str()) == node->mName.C_Str())
                     {
@@ -545,12 +557,14 @@ void COpenAssetImportMesh::BoneTransform(float timeInSeconds, std::vector<glm::m
                 }
             }
 
+            // Combine with parent transform to build the global pose transform
             glm::mat4 globalTransform = parentTransform * nodeTransform;
 
             auto it = m_BoneMapping.find(node->mName.C_Str());
             if (it != m_BoneMapping.end())
             {
                 int index = it->second;
+                // Final matrix: global animated transform * offset matrix
                 transforms[index] = globalTransform * m_BoneInfo[index].offsetMatrix;
             }
 

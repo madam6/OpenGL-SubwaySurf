@@ -4,6 +4,7 @@
 #include "Renderable.h"
 #include "Crystal.h"
 
+// Basic shape of the heart defined in heart.csv similarly to crystal
 class CHeart : public Renderable
 {
 public:

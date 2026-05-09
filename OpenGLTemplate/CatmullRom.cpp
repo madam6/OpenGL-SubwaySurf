@@ -394,8 +394,6 @@ void CCatmullRom::Render()
 {
 	glBindVertexArray(m_vaoTrack);
 	m_texture.Bind();
-	//glLineWidth(2);
-	//glPointSize(5);	
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, m_trianglePoints.size());
 }
 

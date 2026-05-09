@@ -4,6 +4,7 @@
 #include "ModelViewComponent.h"
 #include "ShaderComponent.h"
 
+// Component wrapper around CCrystal
 class CrystalMeshComponent : public Component
 {
 public:

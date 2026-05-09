@@ -27,13 +27,13 @@ bool CShader::LoadShader(std::string sFile, int iType)
 		sProgram[i] = sLines[i].c_str();
 	
 	
-	DEBUG_MSG("---- Compiling shader: %s ----", sFile.c_str());
+	//DEBUG_MSG("---- Compiling shader: %s ----", sFile.c_str());
 
 	for (size_t i = 0; i < sLines.size(); i++) {
-		DEBUG_MSG("%s", sLines[i].c_str());
+		//DEBUG_MSG("%s", sLines[i].c_str());
 	}
 
-	DEBUG_MSG("---- End shader ----");
+	//DEBUG_MSG("---- End shader ----");
 
 	m_uiShader = glCreateShader(iType);
 
@@ -71,7 +71,7 @@ bool CShader::LoadShader(std::string sFile, int iType)
 		return false;
 	}
 	if (iCompilationStatus == GL_TRUE) {
-		DEBUG_MSG("Shader compiled successfully: %s (ID=%u)", sFile.c_str(), m_uiShader);
+		//DEBUG_MSG("Shader compiled successfully: %s (ID=%u)", sFile.c_str(), m_uiShader);
 	}
 	m_iType = iType;
 	m_bLoaded = true;
@@ -197,7 +197,7 @@ bool CShaderProgram::LinkProgram()
 	}
 	if (m_bLinked) 
 	{
-		DEBUG_MSG("Program linked successfully (ID=%u)", m_uiProgram);
+		//DEBUG_MSG("Program linked successfully (ID=%u)", m_uiProgram);
 	}
 	m_bLinked = iLinkStatus == GL_TRUE;
 	return m_bLinked;
@@ -235,7 +235,7 @@ void CShaderProgram::SetUniform(std::string sName, float* fValues, int iCount)
 
 	if (iLoc == -1) 
 	{
-		LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
+		//LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
 		return;
 	}
 	glUniform1fv(iLoc, iCount, fValues);
@@ -246,7 +246,7 @@ void CShaderProgram::SetUniform(std::string sName, const float fValue)
 	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	if (iLoc == -1)
 	{
-		LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
+		//LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
 		return;
 	}
 	glUniform1fv(iLoc, 1, &fValue);
@@ -259,7 +259,7 @@ void CShaderProgram::SetUniform(std::string sName, glm::vec2* vVectors, int iCou
 	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	if (iLoc == -1)
 	{
-		LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
+		//LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
 		return;
 	}
 	glUniform2fv(iLoc, iCount, (GLfloat*)vVectors);
@@ -270,7 +270,7 @@ void CShaderProgram::SetUniform(std::string sName, const glm::vec2 vVector)
 	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	if (iLoc == -1)
 	{
-		LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
+		//LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
 		return;
 	}
 	glUniform2fv(iLoc, 1, (GLfloat*)&vVector);
@@ -281,7 +281,7 @@ void CShaderProgram::SetUniform(std::string sName, glm::vec3* vVectors, int iCou
 	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	if (iLoc == -1)
 	{
-		LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
+		//LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
 		return;
 	}
 	glUniform3fv(iLoc, iCount, (GLfloat*)vVectors);
@@ -292,7 +292,7 @@ void CShaderProgram::SetUniform(std::string sName, const glm::vec3 vVector)
 	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	if (iLoc == -1)
 	{
-		LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
+		//LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
 		return;
 	}
 	glUniform3fv(iLoc, 1, (GLfloat*)&vVector);
@@ -303,7 +303,7 @@ void CShaderProgram::SetUniform(std::string sName, glm::vec4* vVectors, int iCou
 	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	if (iLoc == -1)
 	{
-		LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
+		//LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
 		return;
 	}
 	glUniform4fv(iLoc, iCount, (GLfloat*)vVectors);
@@ -314,7 +314,7 @@ void CShaderProgram::SetUniform(std::string sName, const glm::vec4 vVector)
 	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	if (iLoc == -1)
 	{
-		LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
+		//LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
 		return;
 	}
 	glUniform4fv(iLoc, 1, (GLfloat*)&vVector);
@@ -327,7 +327,7 @@ void CShaderProgram::SetUniform(std::string sName, glm::mat3* mMatrices, int iCo
 	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	if (iLoc == -1)
 	{
-		LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
+		//LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
 		return;
 	}
 	glUniformMatrix3fv(iLoc, iCount, FALSE, (GLfloat*)mMatrices);
@@ -338,7 +338,7 @@ void CShaderProgram::SetUniform(std::string sName, const glm::mat3 mMatrix)
 	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	if (iLoc == -1)
 	{
-		LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
+		//LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
 		return;
 	}
 	glUniformMatrix3fv(iLoc, 1, FALSE, (GLfloat*)&mMatrix);
@@ -351,7 +351,7 @@ void CShaderProgram::SetUniform(std::string sName, glm::mat4* mMatrices, int iCo
 	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	if (iLoc == -1)
 	{
-		LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
+		//LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
 		return;
 	}
 	glUniformMatrix4fv(iLoc, iCount, FALSE, (GLfloat*)mMatrices);
@@ -362,7 +362,7 @@ void CShaderProgram::SetUniform(std::string sName, const glm::mat4 mMatrix)
 	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	if (iLoc == -1)
 	{
-		LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
+		//LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
 		return;
 	}
 	glUniformMatrix4fv(iLoc, 1, FALSE, (GLfloat*)&mMatrix);
@@ -375,7 +375,7 @@ void CShaderProgram::SetUniform(std::string sName, int* iValues, int iCount)
 	int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	if (iLoc == -1)
 	{
-		LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
+		//LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
 		return;
 	}
 	glUniform1iv(iLoc, iCount, iValues);
@@ -386,7 +386,7 @@ void CShaderProgram::SetUniform(std::string sName, const int iValue)
     int iLoc = glGetUniformLocation(m_uiProgram, sName.c_str());
 	if (iLoc == -1)
 	{
-		LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
+		//LOG_ERROR("Uniform NOT FOUND: '%s' in program %u", sName.c_str(), m_uiProgram);
 		return;
 	}
 	glUniform1i(iLoc, iValue);

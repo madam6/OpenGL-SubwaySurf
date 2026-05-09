@@ -265,9 +265,6 @@
     <ClCompile Include="PlayerTrackMovementComponent.cpp">
       <Filter>Source Files\ECS\Components</Filter>
     </ClCompile>
-    <ClCompile Include="FollowCam.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="EventSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -303,6 +300,9 @@
     </ClCompile>
     <ClCompile Include="Sun.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FollowCam.cpp">
+      <Filter>Source Files\GameSystems</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

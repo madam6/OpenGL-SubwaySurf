@@ -34,6 +34,8 @@
 #define INVALID_OGL_VALUE 0xFFFFFFFF
 #define SAFE_DELETE(p) if (p) { delete p; p = NULL; }
 
+// Maximum number of bones that can influence a single vertex
+// Matches shader side skinning layout
 #define MAX_INFLUENCE 4
 
 struct Vertex
@@ -41,6 +43,8 @@ struct Vertex
     glm::vec3 m_pos;
     glm::vec2 m_tex;
     glm::vec3 m_normal;
+    // Bone indices and corresponding blend weights used for GPU skinning
+    // Each vertex is transformed by up to MAX_INFLUENCE bones
     int m_boneIDs[MAX_INFLUENCE];
     float m_weights[MAX_INFLUENCE];
 
@@ -63,10 +67,14 @@ struct Vertex
         }
     }
 
+    // To store influence of the bone
+    // Assimp provides bone vertex weights, which are packed into
+    // fixed-size arrays for uploading to the vertex shader
     void AddBoneData(int boneID, float weight)
     {
         for (int i = 0; i < MAX_INFLUENCE; i++)
         {
+            // First empty slot receives the influence
             if (m_weights[i] == 0.0f)
             {
                 m_boneIDs[i] = boneID;
@@ -79,7 +87,10 @@ struct Vertex
 
 struct BoneInfo
 {
+    // Transforms vertices from mesh space into bone local space
     glm::mat4 offsetMatrix;
+    // Final animated matrix sent to the shader
+    // currentBoneTransform * offsetMatrix
     glm::mat4 finalTransform;
 };
 
@@ -101,6 +112,7 @@ public:
     void SetAnimationSpeed(float speed) { m_animationSpeed = speed; }
     float GetAnimationSpeed() const { return m_animationSpeed; }
 private:
+    // Find the exact position/rotation/scaled based on current time between 2 key frames of the animation
     glm::vec3 InterpolatePosition(float time, const aiNodeAnim* node);
     glm::quat InterpolateRotation(float time, const aiNodeAnim* node);
     glm::vec3 InterpolateScale(float time, const aiNodeAnim* node);

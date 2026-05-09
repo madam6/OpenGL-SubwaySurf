@@ -4,6 +4,7 @@
 
 class PlayerTrackComponent;
 class MaterialComponent;
+// Component that owns CatmullTrack and spawns it into the world
 class CatmullRomComponent : public Component
 {
 public:

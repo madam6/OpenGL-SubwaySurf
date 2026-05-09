@@ -81,6 +81,7 @@ private:
 	void Update();
 	void Render(bool depthPass);
 
+	// Configure all the shaders and record them in the m_ShaderPrograms map
 	void InitShaders();
 
 	std::vector<std::string> ReadEntityLines(const std::string& filename);
@@ -119,7 +120,9 @@ public:
 	~Game();
 	static Game& GetInstance();
 	LRESULT ProcessEvents(HWND window,UINT message, WPARAM w_param, LPARAM l_param);
+	// Get any entity in the world by name
 	std::shared_ptr<Entity> FetchEntityByName(const std::string& name);
+	// Allows to spawn multiple entities defined from a single entity template in entities.cfg
 	std::shared_ptr<Entity> SpawnEntityFromTemplate(const std::string& templateName);
 	void SetHinstance(HINSTANCE hinstance);
 	WPARAM Execute();
@@ -131,7 +134,10 @@ private:
 	void GameLoop();
 	GameWindow m_gameWindow;
 	HINSTANCE m_hInstance;
+
+	// Allows for an easy query to find a certain shader by name
 	std::unordered_map<std::string, CShaderProgram*> m_ShaderPrograms;
+
 	std::unordered_map<std::string, std::vector<std::string>> m_EntityTemplates;
 	int m_frameCount;
 	double m_elapsedTime;

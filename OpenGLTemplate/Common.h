@@ -28,6 +28,8 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+// Macro to log error to the output window of visual studio
+// All uses in final version were commented out
 #define LOG_ERROR(format, ...) \
 do { \
     char buffer[512]; \
@@ -35,6 +37,8 @@ do { \
     OutputDebugStringA(buffer); \
 } while(0)
 
+// Macro to log any debug message to the output window of visual studio
+// All uses in final version were commented out
 #define DEBUG_MSG(format, ...) \
 do { \
     char buffer[512]; \

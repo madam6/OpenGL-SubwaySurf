@@ -4,6 +4,9 @@
 #include "EventSystem.h"
 class ModelViewComponent;
 class CatmullRomComponent;
+
+
+// Component that controlls player's movement alongside the track, recovery points and lane switching
 class PlayerTrackMovementComponent : public Component, public IObserver
 {
 	void Init() override;

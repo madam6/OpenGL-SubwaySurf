@@ -3,6 +3,7 @@
 #include "ComponentRegistry.h"
 #include <sstream>
 
+// This parser enforces format of configuration file of the game (entities.cfg)
 PropertyMap ParseArgs(const std::string& args)
 {
     PropertyMap result;

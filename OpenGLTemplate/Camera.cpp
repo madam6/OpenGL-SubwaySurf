@@ -119,7 +119,7 @@ void CCamera::TranslateByKeyboard(double dt)
 			break;
 		}
 	}
-	DEBUG_MSG("Current mode %i", m_CurrentMode);
+	//DEBUG_MSG("Current mode %i", m_CurrentMode);
 	static bool tabWasPressed = false;
 	bool tabIsPressed = (GetKeyState(VK_TAB) & 0x80) != 0;
 
@@ -130,19 +130,19 @@ void CCamera::TranslateByKeyboard(double dt)
 		switch (m_CurrentMode)
 		{
 		case mode::follow:
-			DEBUG_MSG("Switched to Follow Mode!");
+			//DEBUG_MSG("Switched to Follow Mode!");
 			break;
 		case mode::firstPerson:
-			DEBUG_MSG("Switched to First Person Mode!");
+			//DEBUG_MSG("Switched to First Person Mode!");
 			break;
 		case mode::sideView:
-			DEBUG_MSG("Switched to Side View Mode!");
+			//DEBUG_MSG("Switched to Side View Mode!");
 			break;
 		case mode::topDown:
-			DEBUG_MSG("Switched to Top Down Mode!");
+			//DEBUG_MSG("Switched to Top Down Mode!");
 			break;
 		case mode::normal:
-			DEBUG_MSG("Switched to FreeCam Mode!");
+			//DEBUG_MSG("Switched to FreeCam Mode!");
 			break;
 		}
 	}

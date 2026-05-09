@@ -4,6 +4,7 @@
 #include "Renderable.h"
 #include "Crystal.h"
 
+// Sun renderable, vertices are defined in sun.csv, similar to crystal and heart
 class CSun : public Renderable
 {
 public:

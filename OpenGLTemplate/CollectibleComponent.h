@@ -2,6 +2,7 @@
 #include "Component.h"
 #include "ModelViewComponent.h"
 
+// Component which allows someone to collect it, usually combined with ColliderComponent
 class CollectibleComponent : public Component
 {
 public:

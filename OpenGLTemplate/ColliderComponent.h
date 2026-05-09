@@ -3,6 +3,8 @@
 #include "Common.h"
 #include "ModelViewComponent.h"
 
+// Add to your entity to enable collision detection
+// Collision detection system will generate OnCollision event with 2 entities collided if parent entity bumped into another
 class ColliderComponent : public Component
 {
 public:

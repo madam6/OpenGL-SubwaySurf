@@ -9,6 +9,8 @@ struct camData
 	glm::vec3 upVector;// The camera's up std::vector
 };
 
+// Different camera modes that can be applied to the game
+// Make sure you have a relevant derived CameraMode class and pushed it into m_CameraModes vector
 enum mode
 {
 	follow,
@@ -57,6 +59,7 @@ public:
 	glm::mat3 ComputeNormalMatrix(const glm::mat4 &modelViewMatrix);
 
 private:
+	// Cycle through camera modes
 	void IncrementCameraIndexSafe();
 	void DecrementCameraIndexSafe();
 

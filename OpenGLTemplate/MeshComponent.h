@@ -4,6 +4,9 @@
 class ModelViewComponent;
 class ShaderComponent;
 class MaterialComponent;
+
+// Component that allows to load meshes into the world inclduing .fbx and .obj formates
+// Just specify mesh path and flag of its format
 class MeshComponent : public Component
 {
 public:

@@ -1,6 +1,8 @@
 #pragma once
 #include "Component.h"
 #include "Common.h"
+
+// Component that allows to specify specific shader for parent entity
 class ShaderComponent : public Component
 {
 	void Init() override;

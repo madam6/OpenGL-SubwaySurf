@@ -42,7 +42,7 @@ void CCrystal::Create(std::string a_sDirectory, std::string a_sFilename)
 
 	GLint size = 0;
 	glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
-	DEBUG_MSG("VBO size: %d bytes\n", size);
+	//DEBUG_MSG("VBO size: %d bytes\n", size);
 
 	// Layout:
 	// |position1;normal1;textureCoord1;color1|position2;normal2;textureCoord2;color2...position72;normal72;textureCoord72;color72|

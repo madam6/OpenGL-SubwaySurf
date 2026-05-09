@@ -5,11 +5,13 @@
 
 void Renderer::Render(const FrameData& frameData)
 {
-    // A map to group instances by their underlying mesh & shader
+    // Groups instanced objects by mesh + shader so they can be drawn
+    // with a single instanced draw call
     std::map<std::pair<Renderable*, CShaderProgram*>, RenderData> instancedBatches;
 
     for (auto& renderable : m_RenderQueue)
     {
+        // Collect instanced renderables into batches instead of rendering theb one by one
         if (renderable.isInstanced && renderable.mesh)
         {
             std::pair<Renderable*, CShaderProgram*> key = std::make_pair(renderable.mesh.get(), renderable.shader);
@@ -41,6 +43,7 @@ void Renderer::Render(const FrameData& frameData)
             if (!frameData.isDepthPass && m_DepthBuffer)
             {
                 int shadowMapTextureUnit = 11;
+                // Bind shadow map generated during the depth pass
                 m_DepthBuffer->BindDepth(shadowMapTextureUnit);
                 shader->SetUniform("shadowMap", shadowMapTextureUnit);
             }
@@ -48,6 +51,7 @@ void Renderer::Render(const FrameData& frameData)
             for (int i = 0; i < frameData.lights.size(); i++)
             {
                 std::string base = "lights[" + std::to_string(i) + "]";
+                // Transform light positions into view space for lighting calculations
                 shader->SetUniform(base + ".position", frameData.viewMatrix * frameData.lights[i].position);
                 shader->SetUniform(base + ".La", frameData.lights[i].La);
                 shader->SetUniform(base + ".Ld", frameData.lights[i].Ld);
@@ -78,9 +82,12 @@ void Renderer::Render(const FrameData& frameData)
 
             glm::mat4 modelView = frameData.viewMatrix * renderable.modelMatrix;
             shader->SetUniform("matrices.modelViewMatrix", modelView);
+            // Correctly transforms normals under non-uniform scaling
             glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelView)));
             shader->SetUniform("matrices.normalMatrix", normalMatrix);
             shader->SetUniform("modelMatrix", renderable.modelMatrix);
+            // Animated meshes upload their final bone transforms each frame
+            // The vertex shader uses these matrices for GPU skinning
             if (auto mesh = std::dynamic_pointer_cast<COpenAssetImportMesh>(renderable.mesh)) 
             {
                 int numBones = mesh->GetNumBones();
@@ -89,8 +96,10 @@ void Renderer::Render(const FrameData& frameData)
                     const std::vector<BoneInfo>& boneInfo = mesh->GetBoneInfo();
                     std::vector<glm::mat4> boneTransforms(numBones);
                     for (int i = 0; i < numBones; ++i) {
+                        // finalTransform = animatedPose * inverseBindPose
                         boneTransforms[i] = boneInfo[i].finalTransform;
                     }
+                    // Upload skeletal pose matrices to the shader
                     shader->SetUniform("u_BoneTransforms", boneTransforms.data(), numBones);
                 }
             }
@@ -99,6 +108,7 @@ void Renderer::Render(const FrameData& frameData)
         }
     }
 
+    // Render all collected instance batches using instanced rendering
     for (auto& pair : instancedBatches)
     {
         auto& renderable = pair.second;
@@ -137,6 +147,8 @@ void Renderer::Render(const FrameData& frameData)
         shader->SetUniform("material1.Ms", renderable.Ms);
         shader->SetUniform("material1.shininess", renderable.shininess);
 
+        // Front face culling on slightly bigger meshes
+        // produces an outline/silhouette effect with fragment shader that paints every fragment black
         if (renderable.isOutline)
         {
             glEnable(GL_CULL_FACE);
@@ -152,6 +164,7 @@ void Renderer::Render(const FrameData& frameData)
         renderable.mesh->RenderInstanced(renderable.instanceMatrices);
     }
 
+    // Restore default render state to avoid leaking state into subsequent render passes
     glDisable(GL_CULL_FACE);
     glFrontFace(GL_CCW);
 

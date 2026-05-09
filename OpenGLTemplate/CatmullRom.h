@@ -6,6 +6,8 @@
 #include "Component.h"
 #include "Renderable.h"
 
+// Renderable of the track. Largerly implemented following “Path Starting Guide” on Moodle (IN3005: Computer
+// Graphics, n.d.)
 class CCatmullRom : public Renderable
 {
 public:

@@ -3,6 +3,9 @@
 #include "Texture.h"
 #include "Shaders.h"
 
+// Wrapper of an openGL frame buffer object
+// Largely adapted version of the class from module materials
+// Does not have color component attached, can only be used to render depth map
 class CFrameBufferObject
 {
 public:

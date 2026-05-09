@@ -2,6 +2,7 @@
 #include "CameraMode.h"
 #include <fstream>
 
+// Allows to control the camera with keyboard and records camera's position and upvector to .csv
 class PathBuilderCam : public CameraMode
 {
 public:

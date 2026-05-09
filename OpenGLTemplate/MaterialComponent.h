@@ -1,6 +1,8 @@
 #pragma once
 #include "Component.h"
 #include "Common.h"
+
+// Simple component that allows to define ambient, diffuse and specular values for entity
 class MaterialComponent : public Component
 {
 	void Init() override;

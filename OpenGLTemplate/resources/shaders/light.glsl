@@ -22,6 +22,7 @@ uniform LightInfo lights[LIGHTS_MAX];
 uniform int numLights;
 uniform MaterialInfo material1; 
 
+// Adapted from OpenGL 4 shading language cookbook (David Wolf, 2018)
 vec3 PhongModel(vec4 eyePosition, vec3 eyeNorm)
 {
     vec3 v = normalize(-eyePosition.xyz);

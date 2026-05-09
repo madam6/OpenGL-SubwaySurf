@@ -1,6 +1,7 @@
 #include "Common.h"
 #include "Entity.h"
 
+// Implementation of factory design patter and allows to officially register components with ECS system
 #pragma once
 class ComponentRegistry
 {

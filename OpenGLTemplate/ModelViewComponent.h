@@ -1,6 +1,9 @@
 #pragma once
 #include "Component.h"
 #include "Common.h"
+
+// Component that defines entities position scale and orientation.
+// Should be used for movement
 class ModelViewComponent : public Component
 {
 	void Init() override;
