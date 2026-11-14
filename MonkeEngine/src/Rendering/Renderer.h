@@ -1,0 +1,15 @@
+#pragma once
+
+
+#include "Core/Game.h"
+class Renderer
+{
+	friend class Game;
+	void Render(const FrameData& frameData);
+
+	std::vector<RenderData> m_RenderQueue;
+
+	void SetDepthBuffer(CFrameBufferObject* buffer) { m_DepthBuffer = buffer; };
+
+	CFrameBufferObject* m_DepthBuffer{nullptr};
+};

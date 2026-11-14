@@ -1,0 +1,22 @@
+#pragma once
+
+#include "Rendering/Texture.h"
+#include "Rendering/VertexBufferObject.h"
+#include <glm/gtc/type_ptr.hpp>
+
+class CCubemap
+{
+public:
+	void Create(std::string sPositiveX, std::string sNegativeX, std::string sPositiveY, std::string sNegativeY, std::string sPositiveZ, std::string sNegativeZ);
+	void Release();
+	bool LoadTexture(std::string filename, BYTE **bmpBytes, int &iWidth, int &iHeight);
+	void Bind(int iTextureUnit = 0);
+
+
+private:
+	UINT m_uiVAO;
+	CVertexBufferObject m_vboRenderData;
+	GLuint m_uiTexture;
+	GLuint m_uiSampler; // Sampler name
+
+};

@@ -1,0 +1,26 @@
+#pragma once
+#include "ECS/Component.h"
+#include "Core/Common.h"
+
+// Simple component that allows to define ambient, diffuse and specular values for entity
+class MaterialComponent : public Component
+{
+	void Init() override;
+
+	void AddRenderData(std::vector<RenderData>& renderQueue) override;
+
+	
+	void Update(float dt) override;
+public:
+	glm::vec3 GetMa() const { return Ma; };
+	glm::vec3 GetMd() const { return Md; };
+	glm::vec3 GetMs() const { return Ms; };
+	void Apply(const PropertyMap& props);
+	float GetShiny() const { return shininess; };
+private:
+	// properties
+	glm::vec3 Ma{ 1.0f };
+	glm::vec3 Md{ 1.0f };
+	glm::vec3 Ms{ 0.0f };
+	float shininess = 1.0f;
+};

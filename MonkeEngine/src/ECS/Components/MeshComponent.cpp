@@ -1,0 +1,140 @@
+#include "ECS/Components/MeshComponent.h"
+#include "ECS/Components/ModelViewComponent.h"
+#include "ECS/Entity.h"
+#include "ECS/Components/ShaderComponent.h"
+#include "Core/Game.h"
+#include "ECS/Components/MaterialComponent.h"
+#include "ECS/ComponentRegistry.h"
+#include "Rendering/Renderable.h"
+#include "ECS/Components/PlayerTrackMovementComponent.h"
+
+namespace
+{
+	bool registered = []()
+		{
+			ComponentRegistry::Instance().Register("MeshComponent",
+				[](Entity& e, const PropertyMap& props)
+				{
+					auto& c = e.AddComponent<MeshComponent>();
+					c.Apply(props);
+				});
+
+			return true;
+		}();
+}
+
+
+MeshComponent::MeshComponent()
+{
+	m_Mesh = std::make_shared<COpenAssetImportMesh>();
+}
+
+void MeshComponent::Init()
+{
+	if (auto owner = GetOwner())
+	{
+		m_ModelViewComponentRef = owner->FindComponent<ModelViewComponent>();
+		m_ShaderComponentRef = owner->FindComponent<ShaderComponent>();
+		m_MaterialComponent = owner->FindComponent<MaterialComponent>();
+	}
+
+}
+
+void MeshComponent::AddRenderData(std::vector<RenderData>& renderQueue)
+{
+	if (m_ShaderComponentRef && m_ShaderComponentRef->GetShaderName() == "toonMesh")
+	{
+		RenderData outlineData;
+		outlineData.mesh = m_Mesh;
+		outlineData.useTexture = false;
+		outlineData.isOutline = true;
+		outlineData.modelMatrix = glm::mat4(1.0f);
+
+		if (m_ModelViewComponentRef)
+		{
+			outlineData.modelMatrix = glm::translate(outlineData.modelMatrix, m_ModelViewComponentRef->GetPosition());
+			outlineData.modelMatrix *= m_ModelViewComponentRef->GetOrientation();
+			outlineData.modelMatrix = glm::scale(outlineData.modelMatrix, m_ModelViewComponentRef->GetScale() * 1.05f);
+		}
+
+		outlineData.shader = Game::GetInstance().GetShader("outlineMeshShader");
+
+		if (auto ptMv = GetOwner()->FindComponent<PlayerTrackMovementComponent>())
+		{
+			outlineData.isRecovering = ptMv->IsRecovering();
+		}
+
+		renderQueue.push_back(std::move(outlineData));
+	}
+
+	RenderData data;
+	data.mesh = m_Mesh;
+	data.useTexture = true;
+	data.modelMatrix = glm::mat4(1.0f);
+
+	if (m_ModelViewComponentRef)
+	{
+		data.modelMatrix = glm::translate(data.modelMatrix, m_ModelViewComponentRef->GetPosition());
+		data.modelMatrix *= m_ModelViewComponentRef->GetOrientation();
+		data.modelMatrix = glm::scale(data.modelMatrix, m_ModelViewComponentRef->GetScale());
+	}
+
+	if (m_ShaderComponentRef)
+	{
+		data.shader = Game::GetInstance().GetShader(m_ShaderComponentRef->GetShaderName());
+	}
+	else
+	{
+		data.shader = Game::GetInstance().GetShader(MAIN_SHADER);
+	}
+
+	if (m_MaterialComponent)
+	{
+		data.Ma = m_MaterialComponent->GetMa();
+		data.Md = m_MaterialComponent->GetMd();
+		data.Ms = m_MaterialComponent->GetMs();
+		data.shininess = m_MaterialComponent->GetShiny();
+	}
+
+	if (auto ptMv = GetOwner()->FindComponent<PlayerTrackMovementComponent>())
+	{
+		data.isRecovering = ptMv->IsRecovering();
+	}
+
+	renderQueue.push_back(std::move(data));
+}
+
+void MeshComponent::Apply(const PropertyMap& props)
+{
+	auto itFbx = props.find("isfbx");
+	auto itFilePath = props.find("mesh_file_path");
+	auto itSpeed = props.find("anim_speed");
+	if (itFbx != props.end() && itFilePath != props.end() && itSpeed != props.end())
+	{
+		if (itFbx->second == "true")
+		{
+			m_Mesh->LoadFBX(itFilePath->second);
+			isFBX = true;
+		}
+		else
+		{
+			m_Mesh->Load(itFilePath->second);
+			isFBX = false;
+		}
+		m_Mesh->SetAnimationSpeed(std::stof(itSpeed->second));
+
+	}
+	else
+	{
+		//LOG_ERROR("Incorrect properties on mesh component");
+		assert(0);
+	}
+}
+
+void MeshComponent::Update(float dt)
+{
+	if (isFBX)
+	{
+		m_Mesh->UpdateAnimation(dt);
+	}
+}

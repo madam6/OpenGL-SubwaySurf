@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Config">
+      <UniqueIdentifier>{fafd9cda-5294-4534-acc8-54b9d9a0b851}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{82cafb79-10df-4eed-8ad7-837c1ef883cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{c619a737-e9c1-4085-b8ee-e70c0ebdda0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Cameras">
+      <UniqueIdentifier>{37e8066c-e2fd-4ed3-960c-fbf9056ec06d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Core">
+      <UniqueIdentifier>{bea0f904-defa-4888-b85e-3f38fa6865c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\ECS">
+      <UniqueIdentifier>{b3ab84fa-d677-4ec1-beaf-89024554975e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\ECS\Components">
+      <UniqueIdentifier>{ccf71f16-dc9c-404d-aad3-47119499c968}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Geometry">
+      <UniqueIdentifier>{f267133c-f122-42c2-a6d6-386070abe05d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Rendering">
+      <UniqueIdentifier>{7bf9960e-7573-46e1-bcea-7edf8aeb02e1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Cameras\Camera.h">
+      <Filter>Source\Cameras</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Cameras\CameraMode.h">
+      <Filter>Source\Cameras</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Cameras\FirstPersonCam.h">
+      <Filter>Source\Cameras</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Cameras\FollowCam.h">
+      <Filter>Source\Cameras</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Cameras\FreeCam.h">
+      <Filter>Source\Cameras</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Cameras\PathBuilderCam.h">
+      <Filter>Source\Cameras</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Cameras\SideCamera.h">
+      <Filter>Source\Cameras</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Cameras\TopDownCam.h">
+      <Filter>Source\Cameras</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Audio.h">
+      <Filter>Source\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Common.h">
+      <Filter>Source\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\EventSystem.h">
+      <Filter>Source\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Game.h">
+      <Filter>Source\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\GameWindow.h">
+      <Filter>Source\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\HighResolutionTimer.h">
+      <Filter>Source\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\Component.h">
+      <Filter>Source\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\ComponentRegistry.h">
+      <Filter>Source\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\Components\CatmullRomComponent.h">
+      <Filter>Source\ECS\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\Components\CollectibleComponent.h">
+      <Filter>Source\ECS\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\Components\ColliderComponent.h">
+      <Filter>Source\ECS\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\Components\CrystalMeshComponent.h">
+      <Filter>Source\ECS\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\Components\CurrencyManagerComponent.h">
+      <Filter>Source\ECS\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\Components\MaterialComponent.h">
+      <Filter>Source\ECS\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\Components\MeshComponent.h">
+      <Filter>Source\ECS\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\Components\ModelViewComponent.h">
+      <Filter>Source\ECS\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\Components\PlayerTrackMovementComponent.h">
+      <Filter>Source\ECS\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\Components\ShaderComponent.h">
+      <Filter>Source\ECS\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\Components\TreeMeshComponent.h">
+      <Filter>Source\ECS\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\Entity.h">
+      <Filter>Source\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS\EntityParser.h">
+      <Filter>Source\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Geometry\CatmullRom.h">
+      <Filter>Source\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Geometry\Crystal.h">
+      <Filter>Source\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Geometry\Heart.h">
+      <Filter>Source\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Geometry\Plane.h">
+      <Filter>Source\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Geometry\Skybox.h">
+      <Filter>Source\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Geometry\Sphere.h">
+      <Filter>Source\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Geometry\Sun.h">
+      <Filter>Source\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\Cubemap.h">
+      <Filter>Source\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\FrameBufferObject.h">
+      <Filter>Source\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\FreeTypeFont.h">
+      <Filter>Source\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\MatrixStack.h">
+      <Filter>Source\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\OpenAssetImportMesh.h">
+      <Filter>Source\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\Renderable.h">
+      <Filter>Source\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\Renderer.h">
+      <Filter>Source\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\Shaders.h">
+      <Filter>Source\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\Texture.h">
+      <Filter>Source\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\VertexBufferObject.h">
+      <Filter>Source\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\VertexBufferObjectIndexed.h">
+      <Filter>Source\Rendering</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Cameras\Camera.cpp">
+      <Filter>Source\Cameras</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Cameras\CameraMode.cpp">
+      <Filter>Source\Cameras</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Cameras\FirstPersonCam.cpp">
+      <Filter>Source\Cameras</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Cameras\FollowCam.cpp">
+      <Filter>Source\Cameras</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Cameras\FreeCam.cpp">
+      <Filter>Source\Cameras</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Cameras\PathBuilderCam.cpp">
+      <Filter>Source\Cameras</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Cameras\SideCamera.cpp">
+      <Filter>Source\Cameras</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Cameras\TopDownCam.cpp">
+      <Filter>Source\Cameras</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\Audio.cpp">
+      <Filter>Source\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\EventSystem.cpp">
+      <Filter>Source\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\Game.cpp">
+      <Filter>Source\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\GameWindow.cpp">
+      <Filter>Source\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\HighResolutionTimer.cpp">
+      <Filter>Source\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ECS\Component.cpp">
+      <Filter>Source\ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ECS\Components\CatmullRomComponent.cpp">
+      <Filter>Source\ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ECS\Components\CollectibleComponent.cpp">
+      <Filter>Source\ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ECS\Components\ColliderComponent.cpp">
+      <Filter>Source\ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ECS\Components\CrystalMeshComponent.cpp">
+      <Filter>Source\ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ECS\Components\CurrencyManagerComponent.cpp">
+      <Filter>Source\ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ECS\Components\MaterialComponent.cpp">
+      <Filter>Source\ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ECS\Components\MeshComponent.cpp">
+      <Filter>Source\ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ECS\Components\ModelViewComponent.cpp">
+      <Filter>Source\ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ECS\Components\PlayerTrackMovementComponent.cpp">
+      <Filter>Source\ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ECS\Components\ShaderComponent.cpp">
+      <Filter>Source\ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ECS\Components\TreeMeshComponent.cpp">
+      <Filter>Source\ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ECS\Entity.cpp">
+      <Filter>Source\ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ECS\EntityParser.cpp">
+      <Filter>Source\ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Geometry\CatmullRom.cpp">
+      <Filter>Source\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Geometry\Crystal.cpp">
+      <Filter>Source\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Geometry\Heart.cpp">
+      <Filter>Source\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Geometry\Plane.cpp">
+      <Filter>Source\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Geometry\Skybox.cpp">
+      <Filter>Source\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Geometry\Sphere.cpp">
+      <Filter>Source\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Geometry\Sun.cpp">
+      <Filter>Source\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\Cubemap.cpp">
+      <Filter>Source\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\FrameBufferObject.cpp">
+      <Filter>Source\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\FreeTypeFont.cpp">
+      <Filter>Source\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\MatrixStack.cpp">
+      <Filter>Source\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\OpenAssetImportMesh.cpp">
+      <Filter>Source\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\Renderable.cpp">
+      <Filter>Source\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\Renderer.cpp">
+      <Filter>Source\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\Shaders.cpp">
+      <Filter>Source\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\Texture.cpp">
+      <Filter>Source\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\VertexBufferObject.cpp">
+      <Filter>Source\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\VertexBufferObjectIndexed.cpp">
+      <Filter>Source\Rendering</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="resources\entities.cfg">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="resources\shaders\crystalShader.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\crystalShader.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\instancedTree.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\light.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\mainShader.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\mainShader.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\mc.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\mc.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\outlineMesh.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\outlineShader.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\outlineShader.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\textShader.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\textShader.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\toonMesh.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\toonMesh.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\toonShader.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\toonShader.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\uiShader.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\uiShader.vert">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+</Project>
