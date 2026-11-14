@@ -1,8 +1,8 @@
-<h1 align="center">🐒 Monke Engine</h1>
+<h1 align="center">🐒 OpenGL Subway Surfers Clone</h1>
 
 <p align="center">
-  A small C++20 / OpenGL engine built around a data‑driven Entity Component System,<br>
-  with a lane‑switching endless‑runner demo where a gorilla sprints laps of a looping spline track.
+  A Subway Surfers‑inspired lane runner where a gorilla sprints laps of a looping spline track,<br>
+  built on <b>Monke Engine</b>, my custom C++20 / OpenGL engine with a data‑driven Entity Component System.
 </p>
 
 <p align="center">
@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/hero.jpg" alt="The gorilla running along the stone track past palm trees, crystals and a banana" width="100%">
+  <img src="docs/images/hero.jpg" alt="The gorilla running along the stone track through Perlin-noise hills covered in palm trees" width="100%">
 </p>
 
 ---
